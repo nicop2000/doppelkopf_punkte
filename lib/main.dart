@@ -1,12 +1,12 @@
-// ignore_for_file: prefer_const_constructors
-
-import 'package:doppelkopf_punkte/admin.dart';
+import 'dart:async';
 import 'package:doppelkopf_punkte/doko/game_add_entry.dart';
 import 'package:doppelkopf_punkte/doko/game_list.dart';
 import 'package:doppelkopf_punkte/doko/game_settings.dart';
 import 'package:doppelkopf_punkte/doko/game_statistics.dart';
+import 'package:doppelkopf_punkte/doko/saved_lists.dart';
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/scanner.dart';
 import 'package:doppelkopf_punkte/usersPage/login.dart';
 import 'package:doppelkopf_punkte/usersPage/register.dart';
@@ -17,6 +17,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helper/constants.dart';
 
@@ -25,12 +26,16 @@ import 'helper/constants.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  Env.prefs = await SharedPreferences.getInstance();
+  if (FirebaseAuth.instance.currentUser != null) Env.archivedLists = await Helpers.getMyList();
+  Env.controller.add("ERRRROOOR");
   Env.canCheckBio = await Env.localAuth.canCheckBiometrics;
   Env.deviceSupported = await Env.localAuth.isDeviceSupported();
   if (FirebaseAuth.instance.currentUser != null) {
     Helpers.userLoggedIn(FirebaseAuth.instance.currentUser!);
   }
-  runApp(DokoPunkte());
+
+  runApp(const DokoPunkte());
 }
 
 class DokoPunkte extends StatelessWidget {
@@ -39,13 +44,28 @@ class DokoPunkte extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: Constants.fhTheme,
+      theme: ThemeData(
+        colorScheme: ColorScheme(
+          brightness: Brightness.light,
+          background: PersistentData.getBackground(),
+          onBackground: PersistentData.getOnBackground(),
+          primary: PersistentData.getPrimaryColor(),
+          primaryVariant: Colors.red,
+          onPrimary: PersistentData.getOnPrimary(),
+          secondary: Colors.red,
+          secondaryVariant: Colors.red,
+          onSecondary: Colors.red,
+          error: Colors.red,
+          onError: Colors.deepPurpleAccent,
+          surface: Colors.teal,
+          onSurface: Colors.red,
+        ),
+      ),
       initialRoute: "/",
       routes: {
-        "/": (context) => AppOverlay(),
-        "${routers.login}": (context) => Login(),
-        "${routers.register}": (context) => Register(),
-        "${routers.admin}": (context) => Admin(),
+        "/": (context) => const AppOverlay(),
+        "${routers.login}": (context) => const Login(),
+        "${routers.register}": (context) => const Register(),
       },
       debugShowCheckedModeBanner: true,
     );
@@ -64,86 +84,91 @@ class AppOverlay extends StatefulWidget {
 class _AppOverlayState extends State<AppOverlay> {
   int _index = 0;
   final Map<int, List<dynamic>> _content = {
-    0: ["Spielliste", null],
-    1: ["Eintrag hinzufügen", null],
-    2: ["Statistiken", null],
-    3: ["Einstellungen", null],
-    4: ["Einstellungen", null],
+    0: ["Spielliste", const GameList()],
+    1: ["Spielstatistiken", const GameStatistics()],
+    2: ["Listeneintrag hinzufügen", const GameAddEntry()],
+    3: ["Gespeicherte Statistiken", const SavedLists()],
+    4: ["Einstellungen", const GameSettings()],
   };
 
   @override
   Widget build(BuildContext context) {
-    PersistentTabController _controller;
-    int initialIndex = 1;
-    _controller = PersistentTabController(initialIndex: initialIndex);
+    Env.playersAdd.listen((event) {
+      print("EVENT: $event");
+    });
 
     return Scaffold(
-        appBar: AppBar(
-          actions: [
-            IconButton(
-              icon: Icon(Icons.account_circle_outlined),
-              onPressed: () => _showAccountInfo(context),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.account_circle_outlined,
+              color: Theme.of(context).colorScheme.background,
             ),
-          ],
-          title: Text("${_content[_index]![0]}"),
-        ),
-        body: PersistentTabView(
-          context,
-          controller: _controller,
-          backgroundColor: Constants.mainBlue,
-          handleAndroidBackButtonPress: true,
-          resizeToAvoidBottomInset: true,
-          hideNavigationBarWhenKeyboardShows: true,
-          decoration: NavBarDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(20.0)),
-            adjustScreenBottomPaddingOnCurve: true,
-
+            onPressed: () => _showAccountInfo(context),
           ),
-          screens: const [
-            GameList(),
-            GameAddEntry(),
-            GameStatistics(),
-            GameSettings(),
-            GameList(),
-          ],
-          items: [
-            _bottomNavigationElementPersistent(
-                title: "Spielliste", icon: Icons.account_balance_outlined),
-            _bottomNavigationElementPersistent(
-                title: "Statistiken", icon: Icons.assistant_navigation),
-            _bottomNavigationElementPersistent(
-                title: "Neu", icon: CupertinoIcons.add),
-            _bottomNavigationElementPersistent(
-                title: "Einstellungen", icon: Icons.assistant_navigation),
-            _bottomNavigationElementPersistent(
-                title: "Freunde", icon: Icons.assistant_navigation),
-          ],
-          onItemSelected: (index) => setState(() {
-            _index = index;
-          }),
-          confineInSafeArea: true,
-          navBarStyle: NavBarStyle.style6,
-
-        ));
+        ],
+        title: Text(
+          _content[_index]![0],
+          style: TextStyle(color: Theme.of(context).colorScheme.background),
+        ),
+      ),
+      body: _content[_index]![1],
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(
+          canvasColor: Theme.of(context).colorScheme.primary,
+        ),
+        child: BottomNavigationBar(
+            key: Env.keyBottomNavBar,
+            type: BottomNavigationBarType.shifting,
+            selectedItemColor: PersistentData.getActive(),
+            iconSize: 25,
+            selectedIconTheme: const IconThemeData(
+              size: 35,
+            ),
+            unselectedItemColor: Theme.of(context).colorScheme.background,
+            onTap: (index) {
+              print(index);
+              _index = index;
+              setState(() {
+                print(index);
+              });
+            },
+            currentIndex: _index,
+            showSelectedLabels: true,
+            showUnselectedLabels: false,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            items: [
+              _bottomNavigationElement(
+                  title: _content[0]![0], icon: CupertinoIcons.list_bullet),
+              _bottomNavigationElement(
+                  title: _content[1]![0], icon: CupertinoIcons.chart_pie),
+              _bottomNavigationElement(title: "Add", icon: CupertinoIcons.add),
+              _bottomNavigationElement(
+                  title: "Archiv", icon: CupertinoIcons.floppy_disk),
+              _bottomNavigationElement(
+                  title: _content[4]![0], icon: CupertinoIcons.settings),
+            ]),
+      ),
+    );
   }
 
   /// Das _bottomNavigationElement stellt die Naviagtionselemente in der unteren
   /// Navigationsleiste dar.
 
-  PersistentBottomNavBarItem _bottomNavigationElementPersistent(
+  BottomNavigationBarItem _bottomNavigationElement(
       {required String title, required IconData icon}) {
-    return PersistentBottomNavBarItem(
+    return BottomNavigationBarItem(
       icon: Icon(icon),
-
-      activeColorSecondary: Colors.red,
-
-      title: title,
-      inactiveColorPrimary: Constants.mainGrey,
+      label: title,
+      tooltip: title,
     );
   }
 
   void _showSettings(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: Theme.of(context).colorScheme.background,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
       ),
@@ -156,18 +181,18 @@ class _AppOverlayState extends State<AppOverlay> {
             children: [
               Row(
                 children: [
-                  Spacer(),
+                  const Spacer(),
                   IconButton(
                     tooltip: "Schließen",
                     onPressed: () => Navigator.of(context).pop(),
                     icon: Icon(
                       CupertinoIcons.clear_circled,
-                      color: Constants.mainBlue,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
               ),
-              Expanded(child: Settings()),
+              const Expanded(child: Settings()),
             ],
           ),
         );
@@ -178,6 +203,7 @@ class _AppOverlayState extends State<AppOverlay> {
   void _showAccountInfo(BuildContext context) {
     Stream<User?> firebaseStream = FirebaseAuth.instance.authStateChanges();
     showModalBottomSheet(
+      backgroundColor: Theme.of(context).colorScheme.background,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
       ),
@@ -199,6 +225,7 @@ class _AppOverlayState extends State<AppOverlay> {
                           children: [
                             IconButton(
                               tooltip: "Einstellungen",
+                              color: Theme.of(context).colorScheme.primary,
                               onPressed: () async {
                                 if (await Helpers.authenticate()) {
                                   _showSettings(context);
@@ -206,29 +233,34 @@ class _AppOverlayState extends State<AppOverlay> {
                               },
                               icon: Icon(
                                 CupertinoIcons.settings_solid,
-                                color: Constants.mainBlue,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
-                            Spacer(),
+                            const Spacer(),
                             OutlinedButton.icon(
                               style: OutlinedButton.styleFrom(
-                                side: BorderSide(
+                                side: const BorderSide(
                                     width: 1.0, color: Constants.mainGrey),
                               ),
-                              label: Text("Logout"),
+                              label: Text(
+                                "Logout",
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
                               icon: Icon(
                                 CupertinoIcons.lock_fill,
-                                color: Constants.mainBlue,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                               onPressed: () => FirebaseAuth.instance.signOut(),
                             ),
-                            Spacer(),
+                            const Spacer(),
                             IconButton(
                               tooltip: "Schließen",
                               onPressed: () => Navigator.of(context).pop(),
                               icon: Icon(
                                 CupertinoIcons.clear_circled,
-                                color: Constants.mainBlue,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ],
@@ -236,26 +268,35 @@ class _AppOverlayState extends State<AppOverlay> {
                         Text(
                           "Name: ${FirebaseAuth.instance.currentUser!.displayName}",
                           style: TextStyle(
-                            fontSize: 18,
-                          ),
+                              fontSize: 16,
+                              color:
+                                  Theme.of(context).colorScheme.onBackground),
                         ),
                         Text(
                           "E-Mail: ${FirebaseAuth.instance.currentUser!.email}",
                           style: TextStyle(
-                            fontSize: 18,
-                          ),
+                              fontSize: 16,
+                              color:
+                                  Theme.of(context).colorScheme.onBackground),
                         ),
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               "UID: ${FirebaseAuth.instance.currentUser!.uid}",
                               style: TextStyle(
-                                fontSize: 18,
-                              ),
+                                  fontSize: 16,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground),
                             ),
                             Text(
                               "(Kann zur Authentifizierung gegenüber dem Admin verwendet werden)",
-                              style: TextStyle(fontSize: 8),
+                              style: TextStyle(
+                                  fontSize: 8,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground),
                             ),
                           ],
                         ),
@@ -266,22 +307,31 @@ class _AppOverlayState extends State<AppOverlay> {
                                   "Diesen QR-Code können deine Freunde scannen, um dich als Freund hinzuzufügen",
                               child: QrImage(
                                 data:
-                                    "${FirebaseAuth.instance.currentUser!.uid}:${FirebaseAuth.instance.currentUser!.displayName}",
+                                    "DOKO§${FirebaseAuth.instance.currentUser!.uid}:${FirebaseAuth.instance.currentUser!.displayName}",
                                 size: 200,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onBackground,
                               ),
                             ),
-                            Text("QR-Code für Freundefunktion"),
+                            Text(
+                              "QR-Code für Freundefunktion",
+                              style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              ),
+                            ),
                           ],
                         ),
                         TextButton(
                           onPressed: () => pushNewScreen(
                             context,
-                            screen: Scanner(),
+                            screen: const Scanner(),
                           ),
                           child: Text(
                             "Freund hinzufügen",
                             style: TextStyle(
                               fontSize: 18,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         ),
@@ -290,7 +340,7 @@ class _AppOverlayState extends State<AppOverlay> {
                   ),
                 );
               } else if (snapshot.hasError) {
-                return Text("Fehler");
+                return const Text("Fehler");
               } else {
                 return SizedBox(
                   height: MediaQuery.of(context).size.height * 0.75,
@@ -302,29 +352,29 @@ class _AppOverlayState extends State<AppOverlay> {
                       children: [
                         Row(
                           children: [
-                            Spacer(),
+                            const Spacer(),
                             IconButton(
                               tooltip: "Schließen",
                               onPressed: () => Navigator.of(context).pop(),
                               icon: Icon(
                                 CupertinoIcons.clear_circled,
-                                color: Constants.mainBlue,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ],
                         ),
-                        Spacer(),
+                        const Spacer(),
                         ElevatedButton(
                           onPressed: () async {
                             _showLogin(context);
                           },
-                          child: Text("Anmelden"),
+                          child: const Text("Anmelden"),
                         ),
                         ElevatedButton(
                           onPressed: () => _showRegister(context),
-                          child: Text("Registrieren"),
+                          child: const Text("Registrieren"),
                         ),
-                        Spacer(),
+                        const Spacer(),
                       ],
                     ),
                   ),
@@ -337,6 +387,7 @@ class _AppOverlayState extends State<AppOverlay> {
 
   void _showLogin(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: Theme.of(context).colorScheme.background,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
       ),
@@ -355,20 +406,19 @@ class _AppOverlayState extends State<AppOverlay> {
                   children: [
                     Row(
                       children: [
-                        Spacer(),
+                        const Spacer(),
                         IconButton(
                           tooltip: "Schließen",
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: Icon(
+                          icon: const Icon(
                             CupertinoIcons.clear_circled,
-                            color: Constants.mainBlue,
                           ),
                         ),
                       ],
                     ),
-                    Spacer(),
-                    Login(),
-                    Spacer(),
+                    const Spacer(),
+                    const Login(),
+                    const Spacer(),
                   ],
                 ),
               ),
@@ -381,6 +431,7 @@ class _AppOverlayState extends State<AppOverlay> {
 
   void _showRegister(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: Theme.of(context).colorScheme.background,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
       ),
@@ -399,20 +450,19 @@ class _AppOverlayState extends State<AppOverlay> {
                   children: [
                     Row(
                       children: [
-                        Spacer(),
+                        const Spacer(),
                         IconButton(
                           tooltip: "Schließen",
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: Icon(
+                          icon: const Icon(
                             CupertinoIcons.clear_circled,
-                            color: Constants.mainBlue,
                           ),
                         ),
                       ],
                     ),
-                    Spacer(),
-                    Register(),
-                    Spacer(),
+                    const Spacer(),
+                    const Register(),
+                    const Spacer(),
                   ],
                 ),
               ),

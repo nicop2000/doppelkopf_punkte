@@ -1,12 +1,10 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/usersPage/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -16,29 +14,32 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-    String errorMsg = "";
-    TextEditingController emailLogin = TextEditingController();
-    TextEditingController passwordLogin = TextEditingController();
+  String errorMsg = "";
+  TextEditingController emailLogin = TextEditingController();
+  TextEditingController passwordLogin = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Helpers.getHeadline("Login"),
+        Helpers.getHeadline(context, "Login"),
         Column(
           children: [
             TextField(
               autocorrect: false,
               controller: emailLogin,
               decoration: InputDecoration(
-                hintText: "vorname.nachname@student.fh-kiel.de",
-                hintStyle: TextStyle(
+                hintText: "something@example.de",
+                hintStyle: const TextStyle(
                   color: Constants.mainGreyHint,
                 ),
+                labelStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 labelText: "E-Mail",
-                focusedBorder: UnderlineInputBorder(
+                focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: Constants.mainGrey),
                 ),
               ),
@@ -49,11 +50,14 @@ class _LoginState extends State<Login> {
               obscureText: true,
               decoration: InputDecoration(
                 hintText: "Passwort eingeben",
-                hintStyle: TextStyle(
+                hintStyle: const TextStyle(
                   color: Constants.mainGreyHint,
                 ),
+                labelStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 labelText: "Passwort",
-                focusedBorder: UnderlineInputBorder(
+                focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: Constants.mainGrey),
                 ),
               ),
@@ -88,34 +92,42 @@ class _LoginState extends State<Login> {
               });
             }
           },
-          child: Text("Login"),
+          child: const Text("Login"),
         ),
         RichText(
           text: TextSpan(
-            style: TextStyle(),
+            style: const TextStyle(),
             children: <TextSpan>[
-              TextSpan(
+              const TextSpan(
                 text: 'Haben Sie Ihr ',
                 style: Constants.regularInfoTextStyle,
               ),
               TextSpan(
                 text: 'Passwort vergessen?',
-                style: Constants.linkStyle,
+                style: TextStyle(
+                  fontSize: 15.0,
+                  color: Theme.of(context).colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                ),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
                     createAlertDialog(context);
                   },
               ),
-              TextSpan(
+              const TextSpan(
                 text: '\nHaben Sie noch kein Konto? ',
                 style: Constants.regularInfoTextStyle,
               ),
               TextSpan(
                   text: 'Jetzt registrieren!',
-                  style: Constants.linkStyle,
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    color: Theme.of(context).colorScheme.primary,
+                    decoration: TextDecoration.underline,
+                  ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      pushNewScreen(context, screen: Register());
+                      _showRegister(context);
                     }),
             ],
           ),
@@ -124,29 +136,89 @@ class _LoginState extends State<Login> {
     );
   }
 
+  void _showRegister(BuildContext context) {
+    showModalBottomSheet(
+      backgroundColor: Theme.of(context).colorScheme.background,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      isScrollControlled: true,
+      context: context,
+      builder: (BuildContext bc) {
+        return StatefulBuilder(
+          builder: (BuildContext bc, StateSetter bottomModalStateSetter) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        const Spacer(),
+                        IconButton(
+                          tooltip: "Schließen",
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(
+                            CupertinoIcons.clear_circled,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    const Register(),
+                    const Spacer(),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   void createAlertDialog(BuildContext context) {
     TextEditingController _controllerDialog = TextEditingController();
     showDialog(
+
         context: context,
         builder: (context) {
           return AlertDialog(
             content: Container(
+              color: Theme.of(context).colorScheme.background,
               width: MediaQuery.of(context).size.width / 1.2,
               height: MediaQuery.of(context).size.height / 3.0,
               child: Column(
                 children: <Widget>[
                   Padding(
-                    child: Text("Passwort zurücksetzen"),
+                    child: Text(
+                      "Passwort zurücksetzen",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onBackground,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600
+                      ),
+
+                    ),
                     padding: EdgeInsets.fromLTRB(15.0,
                         MediaQuery.of(context).size.height / 64, 15.0, 15.0),
                   ),
                   TextField(
                     controller: _controllerDialog,
                     decoration: InputDecoration(
-                      focusedBorder: UnderlineInputBorder(
+                      focusedBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: Constants.mainGrey)),
                       hintText: "something@example.de",
                       labelText: "E-Mail",
+                      hintStyle: const TextStyle(
+                        color: Constants.mainGreyHint,
+                      ),
+                      labelStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ),
                   Padding(
@@ -155,14 +227,16 @@ class _LoginState extends State<Login> {
                     child: Material(
                       elevation: 5.0,
                       borderRadius: BorderRadius.circular(20.0),
-                      color: Constants.mainBlue,
+                      color: Theme.of(context).colorScheme.primary,
                       child: MaterialButton(
+
                         minWidth: MediaQuery.of(context).size.width / 2,
                         // padding: EdgeInsets.fromLTRB(10.0, 15.0, 10.0, 15.0),
                         child: Text(
                           "Abschicken",
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Constants.mainWhite),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary),
                         ),
                         onPressed: () async {
                           FirebaseAuth.instance
@@ -170,9 +244,9 @@ class _LoginState extends State<Login> {
                                   email: _controllerDialog.text)
                               .then((_) {
                             final snackBar = SnackBar(
-                              content: Text(
+                              content: const Text(
                                   "E-Mail wurde erfolgreich versendet. Prüfe auch dein Spam-Postfach!"),
-                              backgroundColor: Constants.mainBlue,
+                              backgroundColor: Theme.of(context).colorScheme.primary,
                             );
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(snackBar);
@@ -180,9 +254,9 @@ class _LoginState extends State<Login> {
                           }).catchError((e) {
                             if (e.toString().contains("user-not-found")) {
                               final snackBar = SnackBar(
-                                content: Text(
+                                content: const Text(
                                     "Wenn es einen Nutzer mit dieser E-Mailadresse gibt, wird eine E-Mail mit einem Link zum Zurücksetzten dorthin versendet werden."),
-                                backgroundColor: Constants.mainBlue,
+                                backgroundColor: Theme.of(context).colorScheme.primary,
                               );
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(snackBar);
@@ -190,7 +264,7 @@ class _LoginState extends State<Login> {
                               final snackBar = SnackBar(
                                 content: Text(
                                     "Es ist ein Fehler aufgetreten: ${e.toString()}"),
-                                backgroundColor: Constants.mainBlue,
+                                backgroundColor: Theme.of(context).colorScheme.primary,
                               );
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(snackBar);
@@ -202,13 +276,13 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 15.0),
+                    padding: const EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 15.0),
                     child: MaterialButton(
                       minWidth: MediaQuery.of(context).size.width / 2,
-                      child: Text(
-                        "Abbrechen",
-                        textAlign: TextAlign.center,
-                      ),
+                      child: Text("Abbrechen",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary)),
                       onPressed: () async {
                         Navigator.of(context).pop();
                       },

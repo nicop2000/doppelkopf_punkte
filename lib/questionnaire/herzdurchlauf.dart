@@ -1,5 +1,6 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
-import 'package:doppelkopf_punkte/model/player.dart';
+import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -17,14 +18,6 @@ bool t() {
 
 class _HerzState extends State<Herz> {
 
-
-
-  @override
-  void initState() {
-    print("init");
-    super.initState();
-  }
-
   bool hdWinner = Env.winnerPoints[punkte.herzdurchlaufWinner]!;
   bool hdLoser = Env.winnerPoints[punkte.herzdurchlaufLoser]!;
 
@@ -32,13 +25,21 @@ class _HerzState extends State<Herz> {
   Widget build(BuildContext context) {
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Herzdurchlauf für die Gewinner"),
+        Helpers.getQuestionnaireHeadline(context, "Herzdurchlauf"),
+        const Spacer(flex: 3),
+        Helpers.getQuestionnaireInfo(context, "Herzdurchlauf für Gewinner?"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: hdWinner, onChanged: (value) {
+            Text("Nein", style: TextStyle(
+              color: Theme.of(context).colorScheme.onBackground,
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),),
+            Switch(value: hdWinner, activeColor: PersistentData.getActive(),onChanged: (value) {
               setState(() {
 
               hdWinner = value;
@@ -49,15 +50,20 @@ class _HerzState extends State<Herz> {
                 Env.winnerPoints[punkte.herzdurchlaufWinner] = false;
               }
             }),
-            const Text("Ja")
+            Text("Ja", style: TextStyle(
+              color: Theme.of(context).colorScheme.onBackground,
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),),
           ],
         ),
-        SizedBox(height: 70),
-        const Text("Herzdurchlauf für die Verlierer"),
+        const Spacer(),
+        Helpers.getQuestionnaireInfo(context, "Herzdurchlauf für Verlierer?"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: hdLoser, onChanged: (value) {
+            Text("Nein", style: Helpers.getStyleForSwitch(context),),
+            Switch(value: hdLoser, activeColor: PersistentData.getActive(),onChanged: (value) {
               setState(() {
 
                 hdLoser = value;
@@ -68,11 +74,10 @@ class _HerzState extends State<Herz> {
                 Env.winnerPoints[punkte.herzdurchlaufLoser] = false;
               }
             }),
-            const Text("Ja")
+            Text("Ja", style: Helpers.getStyleForSwitch(context),),
           ],
         ),
-        CupertinoButton(child: const Text("jd"), onPressed: () => print(Env.pointsWinner))
-
+        const Spacer(flex: 3),
       ],
     );
   }

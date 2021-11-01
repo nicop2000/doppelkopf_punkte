@@ -1,11 +1,7 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:email_validator/email_validator.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 
 class Register extends StatefulWidget {
@@ -19,7 +15,7 @@ class _RegisterState extends State<Register> {
 
   String errorMsg = "";
 
-  var _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
     TextEditingController emailRegister = TextEditingController();
     TextEditingController passwordRegister = TextEditingController();
     TextEditingController passwordRepeatRegister = TextEditingController();
@@ -31,7 +27,7 @@ class _RegisterState extends State<Register> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Helpers.getHeadline("Registrieren"),
+          Helpers.getHeadline(context, "Registrieren"),
           Form(
             key: _formKey,
             child: Column(
@@ -40,12 +36,13 @@ class _RegisterState extends State<Register> {
                   autocorrect: false,
                   controller: nameRegister,
                   decoration: InputDecoration(
-                    hintText: "Max Mustermann",
-                    hintStyle: TextStyle(
+                    hintText: "Max",
+                    hintStyle: const TextStyle(
                       color: Constants.mainGreyHint,
                     ),
-                    labelText: "Name",
-                    focusedBorder: UnderlineInputBorder(
+                    labelStyle: TextStyle(color: Theme.of(context).colorScheme.primary,),
+                    labelText: "Vorname",
+                    focusedBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Constants.mainGrey),),
                   ),
                 ),
@@ -57,12 +54,13 @@ class _RegisterState extends State<Register> {
                   controller: emailRegister,
                   decoration: InputDecoration(
                     errorMaxLines: 2,
-                    hintText: "vorname.nachname@student.fh-kiel.de",
-                    hintStyle: TextStyle(
+                    hintText: "something@example.de",
+                    hintStyle: const TextStyle(
                       color: Constants.mainGreyHint,
                     ),
+                    labelStyle: TextStyle(color: Theme.of(context).colorScheme.primary,),
                     labelText: "E-Mail",
-                    focusedBorder: UnderlineInputBorder(
+                    focusedBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Constants.mainGrey),),
                   ),
                 ),
@@ -76,11 +74,12 @@ class _RegisterState extends State<Register> {
                   decoration: InputDecoration(
                     errorMaxLines: 3,
                     hintText: "Passwort eingeben",
-                    hintStyle: TextStyle(
+                    hintStyle: const TextStyle(
                       color: Constants.mainGreyHint,
                     ),
+                    labelStyle: TextStyle(color: Theme.of(context).colorScheme.primary,),
                     labelText: "Passwort",
-                    focusedBorder: UnderlineInputBorder(
+                    focusedBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Constants.mainGrey),),
                   ),
                 ),
@@ -93,11 +92,12 @@ class _RegisterState extends State<Register> {
                   obscureText: true,
                   decoration: InputDecoration(
                     hintText: "Passwort erneut eingeben",
-                    hintStyle: TextStyle(
+                    hintStyle: const TextStyle(
                       color: Constants.mainGreyHint,
                     ),
+                    labelStyle: TextStyle(color: Theme.of(context).colorScheme.primary,),
                     labelText: "Passwortwiederholung",
-                    focusedBorder: UnderlineInputBorder(
+                    focusedBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Constants.mainGrey),),
                   ),
                 ),
@@ -110,13 +110,13 @@ class _RegisterState extends State<Register> {
               if (_formKey.currentState!.validate()) {
                 try {
                   UserCredential userCredentials = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                      email: "${emailRegister.text}",
-                      password: "${passwordRegister.text}"
+                      email: emailRegister.text,
+                      password: passwordRegister.text
                   );
                   User user = userCredentials.user!;
                   user.updateDisplayName(nameRegister.text);
                   Helpers.userLoggedIn(userCredentials.user!);
-                  Navigator.popAndPushNamed(context, '/');
+                  Navigator.of(context).pop();
                 } on FirebaseAuthException catch (e) {
                   print("FIREBASEAUTHEXCEPTION");
 
@@ -147,7 +147,7 @@ class _RegisterState extends State<Register> {
               }
 
             },
-            child: Text("Registrieren"),
+            child: const Text("Registrieren"),
           ),
         ],
     );

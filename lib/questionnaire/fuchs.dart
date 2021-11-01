@@ -1,6 +1,6 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
-import 'package:doppelkopf_punkte/model/player.dart';
-import 'package:doppelkopf_punkte/questionnaire/alten.dart';
+import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -12,8 +12,6 @@ class Fuchs extends StatefulWidget {
 }
 
 class _FuchsState extends State<Fuchs> {
-
-
   @override
   void initState() {
     super.initState();
@@ -26,85 +24,127 @@ class _FuchsState extends State<Fuchs> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Text("Gewinnerteam"),
-        const Text("1. Fuchs gefangen?"),
+        Helpers.getQuestionnaireHeadline(context, "Füchse"),
+        const Spacer(flex: 3),
+        Helpers.getQuestionnaireInfo(context, "Was haben die Gewinner erlangt?"),
+        Helpers.getQuestionnaireSubtext(context, "1. Fuchs gefangen"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: fuchs1Winner, onChanged: (value) {
-              setState(() {
-              fuchs1Winner = value;
-              });
-              if(value) {
-                Env.winnerPoints[punkte.fuchs1Winner] = true;
-
-              } else {
-                Env.winnerPoints[punkte.fuchs1Winner] = false;
-              }
-            }),
-            const Text("Ja")
+            Text(
+              "Nein",
+              style: Helpers.getStyleForSwitch(context),
+            ),
+            Switch(
+              value: fuchs1Winner,
+              onChanged: (value) {
+                setState(() {
+                  fuchs1Winner = value;
+                });
+                if (value) {
+                  Env.winnerPoints[punkte.fuchs1Winner] = true;
+                } else {
+                  Env.winnerPoints[punkte.fuchs1Winner] = false;
+                }
+              },
+              activeColor: PersistentData.getActive(),
+            ),
+            Text(
+              "Ja",
+              style: Helpers.getStyleForSwitch(context),
+            ),
           ],
         ),
-          const Text("Kontra"),
+        Helpers.getQuestionnaireSubtext(context, "2. Fuchs gefangen"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: fuchs2Winner, onChanged: (value) {
-              setState(() {
-                fuchs2Winner = value;
-              });
-              if(value) {
-                Env.winnerPoints[punkte.fuchs2Winner] = true;
-              } else {
-                Env.winnerPoints[punkte.fuchs2Winner] = false;
-              }
-            }),
-            const Text("Ja")
+            Text(
+              "Nein",
+              style: Helpers.getStyleForSwitch(context),
+            ),
+            Switch(
+              value: fuchs2Winner,
+              onChanged: (value) {
+                setState(() {
+                  fuchs2Winner = value;
+                });
+                if (value) {
+                  Env.winnerPoints[punkte.fuchs2Winner] = true;
+                } else {
+                  Env.winnerPoints[punkte.fuchs2Winner] = false;
+                }
+              },
+              activeColor: PersistentData.getActive(),
+            ),
+            Text(
+              "Ja",
+              style: Helpers.getStyleForSwitch(context),
+            ),
           ],
         ),
-        SizedBox(height:100),
-        const Text("Verliererteam"),
-        const Text("1. Fuchs gefangen?"),
+        const Spacer(),
+        Helpers.getQuestionnaireInfo(context, "Was haben die Verlierer erlangt?"),
+        Helpers.getQuestionnaireSubtext(context, "1. Fuchs gefangen"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: fuchs1Loser, onChanged: (value) {
-              setState(() {
-                fuchs1Loser = value;
-              });
-              if(value) {
-                Env.winnerPoints[punkte.fuchs1Loser] = true;
-
-              } else {
-                Env.winnerPoints[punkte.fuchs1Loser] = false;
-              }
-            }),
-            const Text("Ja")
+            Text(
+              "Nein",
+              style: Helpers.getStyleForSwitch(context),
+            ),
+            Switch(
+              value: fuchs1Loser,
+              onChanged: (value) {
+                setState(() {
+                  fuchs1Loser = value;
+                });
+                if (value) {
+                  Env.winnerPoints[punkte.fuchs1Loser] = true;
+                } else {
+                  Env.winnerPoints[punkte.fuchs1Loser] = false;
+                }
+              },
+              activeColor: PersistentData.getActive(),
+            ),
+            Text(
+              "Ja",
+              style: Helpers.getStyleForSwitch(context),
+            ),
           ],
         ),
-        const Text("Kontra"),
+        Helpers.getQuestionnaireSubtext(context, "2. Fuchs gefangen"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: fuchs2Loser, onChanged: (value) {
-              setState(() {
-                fuchs2Loser = value;
-              });
-              if(value) {
-                Env.winnerPoints[punkte.fuchs2Loser] = true;
-              } else {
-                Env.winnerPoints[punkte.fuchs2Loser] = false;
-              }
-            }),
-            const Text("Ja")
+            Text(
+              "Nein",
+              style: Helpers.getStyleForSwitch(context),
+            ),
+            Switch(
+                value: fuchs2Loser,
+                activeColor: PersistentData.getActive(),
+                onChanged: (value) {
+                  setState(() {
+                    fuchs2Loser = value;
+                  });
+                  if (value) {
+                    Env.winnerPoints[punkte.fuchs2Loser] = true;
+                  } else {
+                    Env.winnerPoints[punkte.fuchs2Loser] = false;
+                  }
+                }),
+            Text(
+              "Ja",
+              style: Helpers.getStyleForSwitch(context),
+            ),
           ],
         ),
-        CupertinoButton(child: const Text("jd"), onPressed: () => print(t()))
-
+        const Spacer(flex: 3),
       ],
     );
   }

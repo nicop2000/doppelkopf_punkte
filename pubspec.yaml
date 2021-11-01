@@ -48,6 +48,8 @@ dependencies:
   smooth_page_indicator: ^1.0.0+2
   flutter_material_pickers: ^3.1.2
   numberpicker: ^2.1.1
+  flutter_sfsymbols: ^2.0.0
+  shared_preferences: ^2.0.8
 
 
 

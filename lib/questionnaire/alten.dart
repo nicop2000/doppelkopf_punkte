@@ -1,11 +1,11 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
-import 'package:doppelkopf_punkte/model/player.dart';
+import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Alten extends StatefulWidget {
   const Alten({Key? key}) : super(key: key);
-
 
   @override
   _AltenState createState() => _AltenState();
@@ -20,7 +20,6 @@ class _AltenState extends State<Alten> {
     return isOn;
   }
 
-
   @override
   void initState() {
     print("init");
@@ -31,30 +30,42 @@ class _AltenState extends State<Alten> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Haben die Gewinner gegen die Alten (Kreuzdamen) gespielt? (1 Punkt)"),
+        Helpers.getQuestionnaireHeadline(context, "Gegen die Alten?"),
+        const Spacer(),
+        Helpers.getQuestionnaireInfo(context, "Haben die Gewinner gegen die Alten (Kreuzdamen) gespielt? (1 Punkt)"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: isOn, onChanged: (value) {
-              setState(() {
+            Text(
+              "Nein",
+              style: Helpers.getStyleForSwitch(context),
+            ),
+            Switch(
+              value: isOn,
+              onChanged: (value) {
+                setState(() {
+                  isOn = value;
+                });
+                if (value) {
+                  Env.winnerPoints[punkte.gegenDieAlten] = true;
+                } else {
+                  Env.winnerPoints[punkte.gegenDieAlten] = false;
+                }
+              },
+              activeColor: PersistentData.getActive(),
 
-              isOn = value;
-              });
-              if(value) {
-                Env.winnerPoints[punkte.gegenDieAlten] = true;
-              } else {
-                Env.winnerPoints[punkte.gegenDieAlten] = false;
-              }
-            }),
-            const Text("Ja")
+            ),
+            Text(
+              "Ja",
+              style: Helpers.getStyleForSwitch(context),
+            ),
           ],
         ),
-        CupertinoButton(child: const Text("jd"), onPressed: () => print(Env.pointsWinner))
-
+        const Spacer(),
       ],
     );
   }

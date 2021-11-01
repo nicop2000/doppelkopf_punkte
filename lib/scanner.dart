@@ -1,8 +1,6 @@
-// ignore_for_file: prefer_const_constructors
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -27,29 +25,33 @@ class _ScannerState extends State<Scanner> {
       body: Column(
         children: [
           Expanded(child: _buildQrView(context)),
-          Row(
-            children: [
-              Spacer(),
-              IconButton(
-                tooltip: "Kamera drehen",
-                icon: Icon(Icons.flip_camera_ios),
-                color: Constants.mainBlue,
-                onPressed: () async {
-                  await controller?.flipCamera();
-                  setState(() {});
-                },
-              ),
-              Spacer(),
-              IconButton(
-                tooltip: "Schließen",
-                onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(
-                  CupertinoIcons.clear_circled,
-                  color: Constants.mainBlue,
+          Container(
+            color: Theme.of(context).colorScheme.background,
+            child: Row(
+
+              children: [
+                const Spacer(),
+                IconButton(
+                  tooltip: "Kamera drehen",
+                  icon: const Icon(Icons.flip_camera_ios),
+                  color: Theme.of(context).colorScheme.primary,
+                  onPressed: () async {
+                    await controller?.flipCamera();
+                    setState(() {});
+                  },
                 ),
-              ),
-              Spacer(),
-            ],
+                const Spacer(),
+                IconButton(
+                  tooltip: "Schließen",
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(
+                    CupertinoIcons.clear_circled,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
           ),
         ],
       ),
@@ -85,13 +87,30 @@ class _ScannerState extends State<Scanner> {
       result = scanData;
       print(result!.code);
       controller.pauseCamera();
-      List<String> data = result!.code.split(":");
-      await createAlertDialog(
-          context,
-          "Möchtest du ${data[1]} als Freund:in hinzufügen?",
-          data[0],
-          data[1],
-          false);
+      List<String> preData = result!.code.split("§");
+      List<String> data = preData[1].split(":");
+      if (preData[0] == "DOKO") {
+        await createAlertDialog(
+            context,
+            "Möchtest du ${data[1]} als Freund:in hinzufügen?",
+            data[0],
+            data[1],
+            false);
+      } else if (data[0] == FirebaseAuth.instance.currentUser!.uid){
+        await createAlertDialog(
+            context,
+            "Du kannst dich nicht selber als Freund hinzufügen",
+            "",
+            "",
+            true);
+      } else {
+        await createAlertDialog(
+            context,
+            "Dieser QR-Code gehört nicht zur Doppelkopf-App",
+            "",
+            "",
+            true);
+      }
     });
   }
 
@@ -99,7 +118,7 @@ class _ScannerState extends State<Scanner> {
     print('${DateTime.now().toIso8601String()} _onPermissionSet $p');
     if (!p) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Berechtigung für die Kamera verweigert')),
+        const SnackBar(content: Text('Berechtigung für die Kamera verweigert')),
       );
     }
   }
@@ -111,19 +130,20 @@ class _ScannerState extends State<Scanner> {
         builder: (context) {
           return AlertDialog(
             content: Container(
+              color: Theme.of(context).colorScheme.background,
               width: MediaQuery.of(context).size.width / 1.2,
               height: MediaQuery.of(context).size.height / 3.25,
               child: Column(
                 children: <Widget>[
                   Text(
                     msg,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.w500,
                       color: Colors.green,
                       fontSize: 22.0,
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -147,7 +167,7 @@ class _ScannerState extends State<Scanner> {
                           confirmation ? "Okay" : "Ja",
                           style: TextStyle(
                             fontWeight: FontWeight.w400,
-                            color: Constants.mainWhite,
+                            color: Theme.of(context).colorScheme.background,
                             fontSize: 18.0,
                           ),
                         ),
@@ -162,7 +182,7 @@ class _ScannerState extends State<Scanner> {
                             "Nein",
                             style: TextStyle(
                               fontWeight: FontWeight.w400,
-                              color: Constants.mainWhite,
+                              color: Theme.of(context).colorScheme.background,
                               fontSize: 18.0,
                             ),
                           ),

@@ -1,5 +1,6 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
-import 'package:doppelkopf_punkte/model/player.dart';
+import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -18,13 +19,6 @@ bool t() {
 class _KarlchenState extends State<Karlchen> {
 
 
-
-  @override
-  void initState() {
-    print("init");
-    super.initState();
-  }
-
   bool karlWinner = Env.winnerPoints[punkte.karlchenWinner]!;
   bool karlLoser = Env.winnerPoints[punkte.karlchenLoser]!;
 
@@ -32,13 +26,17 @@ class _KarlchenState extends State<Karlchen> {
   Widget build(BuildContext context) {
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Karlchen für die Gewinner"),
+        Helpers.getQuestionnaireHeadline(context, "Karlchen"),
+        const Spacer(flex: 3),
+        Helpers.getQuestionnaireInfo(context, "Karlchen für die Gewinner?"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: karlWinner, onChanged: (value) {
+            Text("Nein", style: Helpers.getStyleForSwitch(context),),
+            Switch(value: karlWinner, activeColor: PersistentData.getActive(),onChanged: (value) {
               setState(() {
 
               karlWinner = value;
@@ -49,15 +47,16 @@ class _KarlchenState extends State<Karlchen> {
                 Env.winnerPoints[punkte.karlchenWinner] = false;
               }
             }),
-            const Text("Ja")
+            Text("Ja", style: Helpers.getStyleForSwitch(context),),
           ],
         ),
-        SizedBox(height: 70),
-        const Text("Karlchen für die Verlierer"),
+        const Spacer(),
+        Helpers.getQuestionnaireInfo(context, "Karlchen für die Gewinner?"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: karlLoser, onChanged: (value) {
+            Text("Nein", style: Helpers.getStyleForSwitch(context),),
+            Switch(value: karlLoser, activeColor: PersistentData.getActive(),onChanged: (value) {
               setState(() {
 
                 karlLoser = value;
@@ -68,11 +67,10 @@ class _KarlchenState extends State<Karlchen> {
                 Env.winnerPoints[punkte.karlchenLoser] = false;
               }
             }),
-            const Text("Ja")
+            Text("Ja", style: Helpers.getStyleForSwitch(context),),
           ],
         ),
-        CupertinoButton(child: const Text("jd"), onPressed: () => print(Env.pointsWinner))
-
+const Spacer(flex: 3),
       ],
     );
   }

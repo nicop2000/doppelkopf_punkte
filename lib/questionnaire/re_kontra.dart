@@ -1,6 +1,6 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
-import 'package:doppelkopf_punkte/model/player.dart';
-import 'package:doppelkopf_punkte/questionnaire/alten.dart';
+import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -31,13 +31,17 @@ class _ReKontraState extends State<ReKontra> {
   Widget build(BuildContext context) {
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Re"),
+        Helpers.getQuestionnaireHeadline(context, "Ansagen"),
+        const Spacer(flex: 3),
+        Helpers.getQuestionnaireInfo(context, "Re angesagt"),
         Row(
+      mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: re, onChanged: (value) {
+            Text("Nein", style: Helpers.getStyleForSwitch(context),),
+            Switch(value: re, activeColor: PersistentData.getActive(),onChanged: (value) {
               setState(() {
               re = value;
               });
@@ -48,14 +52,16 @@ class _ReKontraState extends State<ReKontra> {
                 Env.winnerPoints[punkte.re] = false;
               }
             }),
-            const Text("Ja")
+            Text("Ja", style: Helpers.getStyleForSwitch(context),),
           ],
         ),
-          const Text("Kontra"),
+        const Spacer(),
+        Helpers.getQuestionnaireInfo(context, "Kontra angesagt"),
         Row(
+      mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Nein"),
-            Switch(value: kontra, onChanged: (value) {
+            Text("Nein", style: Helpers.getStyleForSwitch(context),),
+            Switch(value: kontra, activeColor: PersistentData.getActive(),onChanged: (value) {
               setState(() {
                 kontra = value;
               });
@@ -65,10 +71,10 @@ class _ReKontraState extends State<ReKontra> {
                 Env.winnerPoints[punkte.kontra] = false;
               }
             }),
-            const Text("Ja")
+            Text("Ja", style: Helpers.getStyleForSwitch(context),),
           ],
         ),
-        CupertinoButton(child: const Text("jd"), onPressed: () => print(t()))
+        const Spacer(flex: 3),
 
       ],
     );

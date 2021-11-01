@@ -1,4 +1,6 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
+import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -33,11 +35,14 @@ class _PointsState extends State<Points> {
     return Center(
       child: Column(
         children: [
-          const Text("Wie viele Punkte haben die Verlierer erlangt?"),
+          Helpers.getQuestionnaireHeadline(context, "Punkte der Verlierer"),
+          const Spacer(),
+          Helpers.getQuestionnaireInfo(context, "Wie viele Punkte haben die Verlierer erlangt?"),
           ListTile(
-            title: const Text('Keine Auswahl'),
+            title: Text('Keine Auswahl (0 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.init,
+              activeColor: PersistentData.getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
                 Env.pointSelection = value;
@@ -49,9 +54,10 @@ class _PointsState extends State<Points> {
             ),
           ),
           ListTile(
-            title: const Text('Keine 120'),
+            title: Text('Keine 120 (1 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.keine120,
+              activeColor: PersistentData.getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
                 Env.pointSelection = value;
@@ -64,9 +70,10 @@ class _PointsState extends State<Points> {
             ),
           ),
           ListTile(
-            title: const Text('Keine 90'),
+            title: Text('Keine 90 (2 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.keine90,
+              activeColor: PersistentData.getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
                 Env.pointSelection = value;
@@ -79,9 +86,10 @@ class _PointsState extends State<Points> {
             ),
           ),
           ListTile(
-            title: const Text('Keine 60'),
+            title: Text('Keine 60 (3 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.keine60,
+              activeColor: PersistentData.getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
                 Env.pointSelection = value;
@@ -94,9 +102,10 @@ class _PointsState extends State<Points> {
             ),
           ),
           ListTile(
-            title: const Text('Keine 30'),
+            title: Text('Keine 30 (4 Punkte)',style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.keine30,
+              activeColor: PersistentData.getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
                 Env.pointSelection = value;
@@ -109,9 +118,10 @@ class _PointsState extends State<Points> {
             ),
           ),
           ListTile(
-            title: const Text('Schwarz'),
+            title: Text('Schwarz (5 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.schwarz,
+              activeColor: PersistentData.getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
                 setState(() {
@@ -123,7 +133,7 @@ class _PointsState extends State<Points> {
               },
             ),
           ),
-            CupertinoButton(child: const Text("jd"), onPressed: () => print(Env.pointsWinner))
+          const Spacer(),
         ],
       ),
     );

@@ -1,16 +1,18 @@
+import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
+import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/questionnaire/alten.dart';
 import 'package:doppelkopf_punkte/questionnaire/doppelkopf.dart';
 import 'package:doppelkopf_punkte/questionnaire/fuchs.dart';
 import 'package:doppelkopf_punkte/questionnaire/herzdurchlauf.dart';
 import 'package:doppelkopf_punkte/questionnaire/karlchen.dart';
-import 'package:doppelkopf_punkte/questionnaire/page2.dart';
+import 'package:doppelkopf_punkte/questionnaire/winner.dart';
 import 'package:doppelkopf_punkte/questionnaire/points.dart';
 import 'package:doppelkopf_punkte/questionnaire/re_kontra.dart';
 import 'package:doppelkopf_punkte/questionnaire/result.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-
 
 class GameAddEntry extends StatefulWidget {
   const GameAddEntry({Key? key}) : super(key: key);
@@ -21,50 +23,78 @@ class GameAddEntry extends StatefulWidget {
 
 class _GameAddEntryState extends State<GameAddEntry> {
   final controller = PageController(keepPage: true);
-  final pages = [const Page2(), const Alten(), const Points(), const ReKontra(), const DoKos(), const Fuchs(), const Karlchen(), const Herz(), const Result(),];
+  final pages = [
+    const Winner(),
+    const Alten(),
+    const Points(),
+    const ReKontra(),
+    const DoKos(),
+    const Fuchs(),
+    const Karlchen(),
+    const Herz(),
+    const Result(),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(25, 25, 25, 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-
-          Expanded(
-            child: PageView.builder(
-              controller: controller,
-              itemCount: pages.length,
-              itemBuilder: (_, index) {
-                return pages[index % pages.length];
-              },
-            ),
+    if (Env.game.players.isEmpty) {
+      return Container(
+        color: Theme.of(context).colorScheme.background,
+        child: Center(
+          child: CupertinoButton(
+              child: Text(
+                "Es gibt zur Zeit keine aktive Liste",
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onBackground),
+              ),
+              onPressed: () {
+                final BottomNavigationBar navigationBar =
+                Env.keyBottomNavBar.currentWidget as BottomNavigationBar;
+                navigationBar.onTap!(0);
+              }),
+        ),
+      );
+    } else if (Env.game.players.isNotEmpty &&
+        !(Env.game.currentRound - 1 >= Env.game.maxRounds)) {
+      return Container(
+        color: Theme.of(context).colorScheme.background,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(25, 25, 25, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: PageView.builder(
+                  controller: controller,
+                  itemCount: pages.length,
+                  itemBuilder: (_, index) {
+                    return pages[index % pages.length];
+                  },
+                ),
+              ),
+              SmoothPageIndicator(
+                controller: controller,
+                onDotClicked: (init) => controller.animateToPage(init,
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeInQuad),
+                count: pages.length,
+                effect: JumpingDotEffect(
+                  dotColor: Theme.of(context).colorScheme.primary,
+                  activeDotColor: PersistentData.getActive(),
+                  verticalOffset: 20,
+                  dotHeight: 8,
+                  dotWidth: 8,
+                  jumpScale: .7,
+                ),
+              ),
+            ],
           ),
-          SmoothPageIndicator(
-            controller: controller,
-
-            onDotClicked: (init) => controller.animateToPage(init, duration: const Duration(milliseconds: 600), curve: Curves.easeInQuad),
-            count: pages.length,
-            effect: const JumpingDotEffect(
-              verticalOffset: 20,
-              dotHeight: 8,
-              dotWidth: 8,
-              jumpScale: .7,
-
-
-            ),
-          ),
-
-
-
-
-        ],
-      ),
-    );
+        ),
+      );
+    } else {
+      return Center(
+          child: Helpers.getQuestionnaireHeadline(
+              context, "Die Liste ist beendet"));
+    }
   }
 }
-
-
-
-
-
-

@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:email_validator/email_validator.dart';
@@ -40,7 +38,7 @@ class _SettingsState extends State<Settings> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Spacer(),
+              const Spacer(),
               TextFormField(
                 autocorrect: false,
                 controller: oldV,
@@ -54,9 +52,9 @@ class _SettingsState extends State<Settings> {
                   }
                   return error.isEmpty ? null : error;
                 },
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   errorMaxLines: 2,
-                  hintText: "vorname.nachname@student.fh-kiel.de",
+                  hintText: "something@example.de",
                   hintStyle: TextStyle(
                     color: Constants.mainGreyHint,
                   ),
@@ -74,9 +72,9 @@ class _SettingsState extends State<Settings> {
                       ? null
                       : "Dies ist keine gültige E-Mailadresse";
                 },
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   errorMaxLines: 2,
-                  hintText: "vorname.nachname@student.fh-kiel.de",
+                  hintText: "something@example.de",
                   hintStyle: TextStyle(
                     color: Constants.mainGreyHint,
                   ),
@@ -94,9 +92,9 @@ class _SettingsState extends State<Settings> {
                       ? null
                       : "Die neuen E-Mailadressen stimmen nicht überein";
                 },
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   errorMaxLines: 2,
-                  hintText: "vorname.nachname@student.fh-kiel.de",
+                  hintText: "something@example.de",
                   hintStyle: TextStyle(
                     color: Constants.mainGreyHint,
                   ),
@@ -115,17 +113,17 @@ class _SettingsState extends State<Settings> {
                       ? null
                       : "Das eingegebene Passwort gehört nicht zu diesem Konto",
                   hintText: "Aktuelles Passwort eingeben",
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                     color: Constants.mainGreyHint,
                   ),
                   labelText: "Aktuelles Passwort",
-                  focusedBorder: UnderlineInputBorder(
+                  focusedBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Constants.mainGrey),
                   ),
                 ),
               ),
               Helpers.getErrorDisplay(errMsg),
-              Spacer(),
+              const Spacer(),
               ElevatedButton(
                 onPressed: () async {
                   checkCurrentPasswordValid =
@@ -150,7 +148,7 @@ class _SettingsState extends State<Settings> {
                     return;
                   }
                 },
-                child: Text("E-Mailadresse ändern"),
+                child: const Text("E-Mailadresse ändern"),
               ),
             ],
           ),
@@ -163,7 +161,7 @@ class _SettingsState extends State<Settings> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Spacer(),
+              const Spacer(),
               TextFormField(
                 autocorrect: false,
                 obscureText: true,
@@ -173,11 +171,11 @@ class _SettingsState extends State<Settings> {
                       ? null
                       : "Das eingegebene Passwort gehört nicht zu diesem Konto",
                   hintText: "Aktuelles Passwort eingeben",
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                     color: Constants.mainGreyHint,
                   ),
                   labelText: "Aktuelles Passwort",
-                  focusedBorder: UnderlineInputBorder(
+                  focusedBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Constants.mainGrey),
                   ),
                 ),
@@ -186,7 +184,7 @@ class _SettingsState extends State<Settings> {
                 autocorrect: false,
                 obscureText: true,
                 controller: newV,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: "Neues Passwort eingeben",
                   hintStyle: TextStyle(
                     color: Constants.mainGreyHint,
@@ -206,7 +204,7 @@ class _SettingsState extends State<Settings> {
                       ? null
                       : "Die neuen Passwörter stimmen nicht überein";
                 },
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: "Neues Passwort wiederholen",
                   hintStyle: TextStyle(
                     color: Constants.mainGreyHint,
@@ -218,7 +216,7 @@ class _SettingsState extends State<Settings> {
                 ),
               ),
               Helpers.getErrorDisplay(errMsg),
-              Spacer(),
+              const Spacer(),
               ElevatedButton(
                 onPressed: () async {
                   checkCurrentPasswordValid =
@@ -243,7 +241,7 @@ class _SettingsState extends State<Settings> {
                     return;
                   }
                 },
-                child: Text("Passwort ändern"),
+                child: const Text("Passwort ändern"),
               ),
             ],
           ),
@@ -256,7 +254,7 @@ class _SettingsState extends State<Settings> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Spacer(),
+              const Spacer(),
               Text(FirebaseAuth.instance.currentUser!.displayName != null
                   ? "Der aktuelle Name lautet: ${FirebaseAuth.instance.currentUser!.displayName}"
                   : "Es ist noch kein Name festgelegt"),
@@ -268,7 +266,7 @@ class _SettingsState extends State<Settings> {
                       ? null
                       : "Der Name darf nicht leer sein";
                 },
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: "Max Mustermann",
                   hintStyle: TextStyle(
                     color: Constants.mainGreyHint,
@@ -280,7 +278,7 @@ class _SettingsState extends State<Settings> {
                 ),
               ),
               Helpers.getErrorDisplay(errMsg),
-              Spacer(),
+              const Spacer(),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -291,7 +289,7 @@ class _SettingsState extends State<Settings> {
                     // Navigator.of(context).pop();
                   }
                 },
-                child: Text("Namen ändern"),
+                child: const Text("Namen ändern"),
               ),
             ],
           ),
@@ -301,7 +299,8 @@ class _SettingsState extends State<Settings> {
 
     return Scaffold(
       body: Container(
-        padding: Constants.safeArea,
+        color: Theme.of(context).colorScheme.background,
+        padding: const EdgeInsets.all(15.0),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -309,6 +308,7 @@ class _SettingsState extends State<Settings> {
               CupertinoSegmentedControl(
                   groupValue: segmentedControlGroupValue,
                   children: myTabs,
+                  unselectedColor: Theme.of(context).colorScheme.background,
                   onValueChanged: (i) {
                     setState(() {
                       errMsg = "";
@@ -333,13 +333,13 @@ class _SettingsState extends State<Settings> {
                 children: <Widget>[
                   Text(
                     msg,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.w500,
                       color: Colors.green,
                       fontSize: 22.0,
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
@@ -348,7 +348,7 @@ class _SettingsState extends State<Settings> {
                       "Okay",
                       style: TextStyle(
                         fontWeight: FontWeight.w400,
-                        color: Constants.mainWhite,
+                        color: Theme.of(context).colorScheme.background,
                         fontSize: 18.0,
                       ),
                     ),

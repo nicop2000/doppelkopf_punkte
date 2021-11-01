@@ -1,5 +1,6 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
-import 'package:doppelkopf_punkte/model/player.dart';
+import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
@@ -16,41 +17,43 @@ class DoKos extends StatefulWidget {
 class _DoKosState extends State<DoKos> {
 
   @override
-  void initState() {
-    print("init");
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Gewinnerteam"),
-        const Text("Wie viele Doppelköpfe habt ihr bekommen?"),
+        Helpers.getQuestionnaireHeadline(context, "Doppelköpfe"),
+        const Spacer(flex: 3),
+        Helpers.getQuestionnaireInfo(context, "Doppelköpfe der Gewinner"),
+
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             NumberPicker(
               value: Env.dokoWinner,
+              textStyle: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 17),
+              selectedTextStyle: TextStyle(color: PersistentData.getActive(), fontSize: 30, fontWeight: FontWeight.w600),
               minValue: 0,
               maxValue: 5,
               onChanged: (value) => setState(() => Env.dokoWinner = value),
             ),
           ],
         ),
-        SizedBox(height: 70),
+        const Spacer(),
+        Helpers.getQuestionnaireInfo(context, "Doppelköpfe der Verlierer"),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             NumberPicker(
               value: Env.dokoLoser,
+              textStyle: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 17),
+              selectedTextStyle: TextStyle(color: PersistentData.getActive(), fontSize: 30, fontWeight: FontWeight.w600),
               minValue: 0,
               maxValue: 5,
               onChanged: (value) => setState(() => Env.dokoLoser = value),
             ),
           ],
         ),
-        CupertinoButton(child: const Text("jd"), onPressed: () => print(Env.pointsWinner))
-
+        const Spacer(flex: 3),
       ],
     );
   }

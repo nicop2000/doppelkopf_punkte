@@ -3,14 +3,14 @@ import 'package:doppelkopf_punkte/model/player.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Page2 extends StatefulWidget {
-  const Page2({Key? key}) : super(key: key);
+class Winner extends StatefulWidget {
+  const Winner({Key? key}) : super(key: key);
 
   @override
-  _Page2State createState() => _Page2State();
+  _WinnerState createState() => _WinnerState();
 }
 
-class _Page2State extends State<Page2> {
+class _WinnerState extends State<Winner> {
   Map<Player, bool> activated = Env.wonPoints;
   int _playerCount = 0;
 
@@ -18,22 +18,26 @@ class _Page2State extends State<Page2> {
   void initState() {
     activated = Env.wonPoints;
 
-
     super.initState();
 
-
-    setState(() {
-
-
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Wer hat gewonnen?"),
+        Text(
+          "Wer hat gewonnen?",
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onBackground,
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
+          ),
+        ),
+        const Spacer(),
         StatefulBuilder(
           builder: (BuildContext bc, StateSetter friendState) {
             Widget getPlayer(Player p) {
@@ -49,8 +53,6 @@ class _Page2State extends State<Page2> {
                 ),
                 onTap: () {
                   activated.update(p, (value) {
-                    print(_playerCount);
-
                     if (!value && _playerCount < 3) {
                       _playerCount++;
                       return !value;
@@ -71,13 +73,12 @@ class _Page2State extends State<Page2> {
             return Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                for (Player p in Env.players) getPlayer(p),
+                for (Player p in Env.game.players) getPlayer(p),
               ],
             );
           },
         ),
-        CupertinoButton(child: Text("jd"), onPressed: () => print(Env.pointsWinner))
-
+        const Spacer(),
       ],
     );
   }
