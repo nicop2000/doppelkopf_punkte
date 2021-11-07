@@ -1,5 +1,7 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
+import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:doppelkopf_punkte/model/player.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -11,12 +13,12 @@ class Winner extends StatefulWidget {
 }
 
 class _WinnerState extends State<Winner> {
-  Map<Player, bool> activated = Env.wonPoints;
+  Map<Player, bool> activated = Runde.instance.wonPoints;
   int _playerCount = 0;
 
   @override
   void initState() {
-    activated = Env.wonPoints;
+    activated = Runde.instance.wonPoints;
 
     super.initState();
 
@@ -63,7 +65,6 @@ class _WinnerState extends State<Winner> {
                       return value;
                     }
                   });
-                  print(activated);
 
                   friendState(() {});
                 },
@@ -73,7 +74,7 @@ class _WinnerState extends State<Winner> {
             return Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                for (Player p in Env.game.players) getPlayer(p),
+                for (Player p in Game.instance.players) getPlayer(p),
               ],
             );
           },

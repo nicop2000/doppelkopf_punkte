@@ -2,6 +2,7 @@ import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/model/saved_list.dart';
+import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -68,18 +69,18 @@ class _SavedListsState extends State<SavedLists> {
     );
   }
 
+
   List<Widget> formLists() {
     List<Widget> tempWidget = [];
 
-    Env.archivedLists.forEach((key, value) {
-      SavedList sL2 = SavedList.fromJson(value);
+    AppUser.instance.archivedLists.forEach((key) {
       tempWidget.add(
         Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: Text(
-                sL2.date.replaceAll("T", " "),
+                key.date.replaceAll("T", " "),
                 style: TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.w700,
@@ -109,17 +110,17 @@ class _SavedListsState extends State<SavedLists> {
                 Column(
                   children: [
                     Text(
-                      "${sL2.players[0]}",
+                      "${key.players[0].getName()}",
                       style: getHeadStyle(),
                     ),
                     getSpacing(),
-                    Text("${sL2.won[0]}", style: getListStyle()),
+                    Text("${key.players[0].getWon()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.lost[0]}", style: getListStyle()),
+                    Text("${key.players[0].getLost()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.solo[0]}", style: getListStyle()),
+                    Text("${key.players[0].getSolo()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.points[0]}", style: getListStyle()),
+                    Text("${key.players[0].getLastScore()}", style: getListStyle()),
                     getSpacing(),
                   ],
                 ),
@@ -127,17 +128,17 @@ class _SavedListsState extends State<SavedLists> {
                 Column(
                   children: [
                     Text(
-                      "${sL2.players[1]}",
+                      "${key.players[1].getName()}",
                       style: getHeadStyle(),
                     ),
                     getSpacing(),
-                    Text("${sL2.won[1]}", style: getListStyle()),
+                    Text("${key.players[1].getWon()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.lost[1]}", style: getListStyle()),
+                    Text("${key.players[1].getLost()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.solo[1]}", style: getListStyle()),
+                    Text("${key.players[1].getSolo()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.points[1]}", style: getListStyle()),
+                    Text("${key.players[1].getLastScore()}", style: getListStyle()),
                     getSpacing(),
                   ],
                 ),
@@ -145,17 +146,17 @@ class _SavedListsState extends State<SavedLists> {
                 Column(
                   children: [
                     Text(
-                      "${sL2.players[2]}",
+                      "${key.players[2].getName()}",
                       style: getHeadStyle(),
                     ),
                     getSpacing(),
-                    Text("${sL2.won[2]}", style: getListStyle()),
+                    Text("${key.players[2].getWon()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.lost[2]}", style: getListStyle()),
+                    Text("${key.players[2].getLost()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.solo[2]}", style: getListStyle()),
+                    Text("${key.players[2].getSolo()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.points[2]}", style: getListStyle()),
+                    Text("${key.players[2].getLastScore()}", style: getListStyle()),
                     getSpacing(),
                   ],
                 ),
@@ -163,17 +164,17 @@ class _SavedListsState extends State<SavedLists> {
                 Column(
                   children: [
                     Text(
-                      "${sL2.players[3]}",
+                      "${key.players[3].getName()}",
                       style: getHeadStyle(),
                     ),
                     getSpacing(),
-                    Text("${sL2.won[3]}", style: getListStyle()),
+                    Text("${key.players[3].getWon()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.lost[3]}", style: getListStyle()),
+                    Text("${key.players[3].getLost()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.solo[3]}", style: getListStyle()),
+                    Text("${key.players[3].getSolo()}", style: getListStyle()),
                     getSpacing(),
-                    Text("${sL2.points[3]}", style: getListStyle()),
+                    Text("${key.players[3].getLastScore()}", style: getListStyle()),
                     getSpacing(),
                   ],
                 ),
@@ -184,22 +185,22 @@ class _SavedListsState extends State<SavedLists> {
                 child: const Text("Als Kreisdiagramm anzeigen"),
                 onPressed: () async {
                   Map<String, double> dataMapWon = {
-                    sL2.players[0]: sL2.won[0].toDouble(),
-                    sL2.players[1]: sL2.won[1].toDouble(),
-                    sL2.players[2]: sL2.won[2].toDouble(),
-                    sL2.players[3]: sL2.won[3].toDouble(),
+                    key.players[0].getName(): key.players[0].getWon().toDouble(),
+                    key.players[1].getName(): key.players[1].getWon().toDouble(),
+                    key.players[2].getName(): key.players[2].getWon().toDouble(),
+                    key.players[3].getName(): key.players[3].getWon().toDouble(),
                   };
                   Map<String, double> dataMapLost = {
-                    sL2.players[0]: sL2.lost[0].toDouble(),
-                    sL2.players[1]: sL2.lost[1].toDouble(),
-                    sL2.players[2]: sL2.lost[2].toDouble(),
-                    sL2.players[3]: sL2.lost[3].toDouble(),
+                    key.players[0].getName(): key.players[0].getLost().toDouble(),
+                    key.players[1].getName(): key.players[1].getLost().toDouble(),
+                    key.players[2].getName(): key.players[2].getLost().toDouble(),
+                    key.players[3].getName(): key.players[3].getLost().toDouble(),
                   };
                   Map<String, double> dataMapSolo = {
-                    sL2.players[0]: sL2.solo[0].toDouble(),
-                    sL2.players[1]: sL2.solo[1].toDouble(),
-                    sL2.players[2]: sL2.solo[2].toDouble(),
-                    sL2.players[3]: sL2.solo[3].toDouble(),
+                    key.players[0].getName(): key.players[0].getSolo().toDouble(),
+                    key.players[1].getName(): key.players[1].getSolo().toDouble(),
+                    key.players[2].getName(): key.players[2].getSolo().toDouble(),
+                    key.players[3].getName(): key.players[3].getSolo().toDouble(),
                   };
                   showPie(
                       context,
@@ -214,11 +215,11 @@ class _SavedListsState extends State<SavedLists> {
             CupertinoButton(
                 child: const Text("Diese Liste löschen"),
                 onPressed: () async {
-                  await Constants.fbDB
+                  await Constants.realtimeDatabase
                       .child(
-                          'lists/${FirebaseAuth.instance.currentUser!.uid}/${sL2.date}')
+                      'lists/${FirebaseAuth.instance.currentUser!.uid}/${key.date}')
                       .remove();
-                  Env.archivedLists = await Helpers.getMyList();
+                  AppUser.instance.archivedLists = await Helpers.getMyList();
                   setState(() {});
                 }),
           ],
@@ -227,6 +228,8 @@ class _SavedListsState extends State<SavedLists> {
     });
     return tempWidget;
   }
+
+
 
   void showPie(BuildContext context, String textWon, dataMapWon,
       String textLost, dataMapLost, String textSolo, dataMapSolo) {

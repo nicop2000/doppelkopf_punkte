@@ -1,13 +1,24 @@
+import 'package:doppelkopf_punkte/model/game.dart';
+import 'package:doppelkopf_punkte/model/player.dart';
+
 class SavedList {
 
-  final String date;
-  final List players;
-  final List won;
-  final List lost;
-  final List solo;
-  final List points;
+  String date = "";
+  List players = [];
+  List won = [];
+  List lost = [];
+  List solo = [];
+  List points = [];
 
-  SavedList(this.date, this.players, this.won, this.lost, this.solo, this.points);
+
+  SavedList(Game game) {
+    date = game.date;
+    players = game.players;
+    won = players.map((e) => e.getWon()).toList();
+    lost = players.map((e) => e.getLost()).toList();
+    solo = players.map((e) => e.getSolo()).toList();
+    points = players.map((e) => e.getLastScore()).toList();
+  }
 
   SavedList.fromJson(Map<dynamic, dynamic> json):
         date = json['Datum'],

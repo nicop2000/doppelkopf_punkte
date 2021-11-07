@@ -1,3 +1,6 @@
+import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
+import 'package:doppelkopf_punkte/model/friend.dart';
+import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,9 +19,6 @@ class _ScannerState extends State<Scanner> {
   Barcode? result;
   QRViewController? controller;
 
-  // In order to get hot reload to work we need to pause the camera if the platform
-  // is android, or resume the camera if the platform is iOS.
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +28,6 @@ class _ScannerState extends State<Scanner> {
           Container(
             color: Theme.of(context).colorScheme.background,
             child: Row(
-
               children: [
                 const Spacer(),
                 IconButton(
@@ -59,13 +58,11 @@ class _ScannerState extends State<Scanner> {
   }
 
   Widget _buildQrView(BuildContext context) {
-    // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
             MediaQuery.of(context).size.height < 400)
         ? 150.0
         : 300.0;
-    // To ensure the Scanner view is properly sizes after rotation
-    // we need to listen for Flutter SizeChanged notification and update controller
+
     return QRView(
       key: qrKey,
       onQRViewCreated: _onQRViewCreated,
@@ -84,32 +81,42 @@ class _ScannerState extends State<Scanner> {
       this.controller = controller;
     });
     controller.scannedDataStream.listen((scanData) async {
+      bool toContinue = true;
       result = scanData;
-      print(result!.code);
       controller.pauseCamera();
       List<String> preData = result!.code.split("§");
       List<String> data = preData[1].split(":");
-      if (preData[0] == "DOKO") {
-        await createAlertDialog(
-            context,
-            "Möchtest du ${data[1]} als Freund:in hinzufügen?",
-            data[0],
-            data[1],
-            false);
-      } else if (data[0] == FirebaseAuth.instance.currentUser!.uid){
-        await createAlertDialog(
-            context,
-            "Du kannst dich nicht selber als Freund hinzufügen",
-            "",
-            "",
-            true);
-      } else {
-        await createAlertDialog(
-            context,
-            "Dieser QR-Code gehört nicht zur Doppelkopf-App",
-            "",
-            "",
-            true);
+      for (Friend f in AppUser.instance.friends) {
+        if (f.uid == data[0]) {
+          toContinue = false;
+          await createAlertDialog(context,
+              "Du bist bereits mit ${f.name} befreundet", "", "", true, "Mich gibts nur einmal");
+        }
+      }
+      if (toContinue) {
+        if (preData[0] == "DOKO" &&
+            (data[0] != FirebaseAuth.instance.currentUser!.uid)) {
+          await createAlertDialog(
+              context,
+              "Möchtest du ${data[1]} als Freund:in hinzufügen?",
+              data[0],
+              data[1],
+              false, "Freund hinzufügen?");
+          controller.resumeCamera();
+        } else if (data[0] == FirebaseAuth.instance.currentUser!.uid) {
+          await createAlertDialog(
+              context,
+              "Du kannst dich nicht selber als Freund hinzufügen",
+              "",
+              "",
+              true,
+          "Du brauchst andere Freunde :c");
+          controller.resumeCamera();
+        } else {
+          await createAlertDialog(context,
+              "Dieser QR-Code gehört nicht zur Doppelkopf-App", "", "", true, "QR-Code passt nicht");
+          controller.resumeCamera();
+        }
       }
     });
   }
@@ -124,75 +131,49 @@ class _ScannerState extends State<Scanner> {
   }
 
   Future<void> createAlertDialog(BuildContext context, String msg, String uid,
-      String name, bool confirmation) async {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Container(
-              color: Theme.of(context).colorScheme.background,
-              width: MediaQuery.of(context).size.width / 1.2,
-              height: MediaQuery.of(context).size.height / 3.25,
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    msg,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.green,
-                      fontSize: 22.0,
-                    ),
-                  ),
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          if (!confirmation) Helpers.addFriend(uid, name);
-                          if (!confirmation) {
-                            Navigator.of(context).popAndPushNamed('/');
-                          }
-                          if (!confirmation) {
-                            createAlertDialog(
-                                context,
-                                "$name wurde erfolgreich zu deinen Freunden hinzugefügt",
-                                uid,
-                                name,
-                                true);
-                          }
-                          if (confirmation) Navigator.of(context).pop();
-                        },
-                        child: Text(
-                          confirmation ? "Okay" : "Ja",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            color: Theme.of(context).colorScheme.background,
-                            fontSize: 18.0,
-                          ),
-                        ),
-                      ),
-                      if (!confirmation)
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            controller!.resumeCamera();
-                          },
-                          child: Text(
-                            "Nein",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w400,
-                              color: Theme.of(context).colorScheme.background,
-                              fontSize: 18.0,
-                            ),
-                          ),
-                        ),
-                    ],
-                  )
-                ],
-              ),
+      String name, bool confirmation, String headline) async {
+    await showCupertinoDialog(
+        context: context, builder: (BuildContext context) {
+      return CupertinoAlertDialog(
+        title: Text(headline),
+        content: Text(msg),
+        actions: <Widget>[
+
+          CupertinoDialogAction(
+            child: Text(confirmation ? "Okay" : "Ja",),
+            onPressed: () {
+              if (!confirmation) Helpers.addFriend(uid, name);
+              if (!confirmation) {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              }
+              if (!confirmation) {
+                createAlertDialog(
+                    context,
+                    "$name wurde erfolgreich zu deinen Freunden hinzugefügt",
+                    uid,
+                    name,
+                    true,
+                "Hat geklappt!");
+              }
+              if (confirmation) {
+                Navigator.of(context).pop();
+                controller!.resumeCamera();
+              }
+            },
+
+          ),
+          if (!confirmation)
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.of(context).pop();
+                controller!.resumeCamera();
+              },
+              child: const Text("Nein"),
             ),
-          );
-        });
+        ],
+      );
+    });
+
   }
 }

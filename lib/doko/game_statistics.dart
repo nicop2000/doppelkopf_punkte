@@ -1,4 +1,5 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
+import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
@@ -13,26 +14,26 @@ class GameStatistics extends StatefulWidget {
 class _GameStatisticsState extends State<GameStatistics> {
   @override
   Widget build(BuildContext context) {
-    if (Env.game.players.isNotEmpty) {
+    if (Game.instance.players.isNotEmpty) {
       Map<String, double> dataMapWon = {
-        Env.game.players[0].getName(): Env.game.players[0].getWon().toDouble(),
-        Env.game.players[1].getName(): Env.game.players[1].getWon().toDouble(),
-        Env.game.players[2].getName(): Env.game.players[2].getWon().toDouble(),
-        Env.game.players[3].getName(): Env.game.players[3].getWon().toDouble(),
+        Game.instance.players[0].getName(): Game.instance.players[0].getWon().toDouble(),
+        Game.instance.players[1].getName(): Game.instance.players[1].getWon().toDouble(),
+        Game.instance.players[2].getName(): Game.instance.players[2].getWon().toDouble(),
+        Game.instance.players[3].getName(): Game.instance.players[3].getWon().toDouble(),
       };
 
       Map<String, double> dataMapLost = {
-        Env.game.players[0].getName(): Env.game.players[0].getLost().toDouble(),
-        Env.game.players[1].getName(): Env.game.players[1].getLost().toDouble(),
-        Env.game.players[2].getName(): Env.game.players[2].getLost().toDouble(),
-        Env.game.players[3].getName(): Env.game.players[3].getLost().toDouble(),
+        Game.instance.players[0].getName(): Game.instance.players[0].getLost().toDouble(),
+        Game.instance.players[1].getName(): Game.instance.players[1].getLost().toDouble(),
+        Game.instance.players[2].getName(): Game.instance.players[2].getLost().toDouble(),
+        Game.instance.players[3].getName(): Game.instance.players[3].getLost().toDouble(),
       };
 
       Map<String, double> dataMapSolo = {
-        Env.game.players[0].getName(): Env.game.players[0].getSolo().toDouble(),
-        Env.game.players[1].getName(): Env.game.players[1].getSolo().toDouble(),
-        Env.game.players[2].getName(): Env.game.players[2].getSolo().toDouble(),
-        Env.game.players[3].getName(): Env.game.players[3].getSolo().toDouble(),
+        Game.instance.players[0].getName(): Game.instance.players[0].getSolo().toDouble(),
+        Game.instance.players[1].getName(): Game.instance.players[1].getSolo().toDouble(),
+        Game.instance.players[2].getName(): Game.instance.players[2].getSolo().toDouble(),
+        Game.instance.players[3].getName(): Game.instance.players[3].getSolo().toDouble(),
       };
       return Container(
         color: Theme.of(context).colorScheme.background,
@@ -60,7 +61,7 @@ class _GameStatisticsState extends State<GameStatistics> {
               ),
               onPressed: () {
                 final BottomNavigationBar navigationBar =
-                    Env.keyBottomNavBar.currentWidget as BottomNavigationBar;
+                    EnviromentVariables.keyBottomNavBar.currentWidget as BottomNavigationBar;
                 navigationBar.onTap!(0);
               }),
         ),

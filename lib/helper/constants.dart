@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Constants {
-  static final fbDB = FirebaseDatabase(databaseURL: 'https://doppelkopf-punkte-default-rtdb.europe-west1.firebasedatabase.app/').reference();
+  static final realtimeDatabase = FirebaseDatabase(databaseURL: 'https://doppelkopf-punkte-default-rtdb.europe-west1.firebasedatabase.app/').reference();
 
   static const mainGrey = Color(0xFFCDD3D9);
   static const mainGreyVariant = Color(0xFFBDC3C9);

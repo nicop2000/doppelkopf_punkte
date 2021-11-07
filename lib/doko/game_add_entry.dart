@@ -1,6 +1,7 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:doppelkopf_punkte/questionnaire/alten.dart';
 import 'package:doppelkopf_punkte/questionnaire/doppelkopf.dart';
 import 'package:doppelkopf_punkte/questionnaire/fuchs.dart';
@@ -37,7 +38,7 @@ class _GameAddEntryState extends State<GameAddEntry> {
 
   @override
   Widget build(BuildContext context) {
-    if (Env.game.players.isEmpty) {
+    if (Game.instance.players.isEmpty) {
       return Container(
         color: Theme.of(context).colorScheme.background,
         child: Center(
@@ -49,13 +50,13 @@ class _GameAddEntryState extends State<GameAddEntry> {
               ),
               onPressed: () {
                 final BottomNavigationBar navigationBar =
-                Env.keyBottomNavBar.currentWidget as BottomNavigationBar;
+                EnviromentVariables.keyBottomNavBar.currentWidget as BottomNavigationBar;
                 navigationBar.onTap!(0);
               }),
         ),
       );
-    } else if (Env.game.players.isNotEmpty &&
-        !(Env.game.currentRound - 1 >= Env.game.maxRounds)) {
+    } else if (Game.instance.players.isNotEmpty &&
+        !(Game.instance.currentRound - 1 >= Game.instance.maxRounds)) {
       return Container(
         color: Theme.of(context).colorScheme.background,
         child: Padding(

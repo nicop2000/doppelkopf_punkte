@@ -1,6 +1,12 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -19,8 +25,8 @@ bool t() {
 class _KarlchenState extends State<Karlchen> {
 
 
-  bool karlWinner = Env.winnerPoints[punkte.karlchenWinner]!;
-  bool karlLoser = Env.winnerPoints[punkte.karlchenLoser]!;
+  bool karlWinner = Runde.instance.winnerPoints[Sonderpunkte.karlchenWinner]!;
+  bool karlLoser = Runde.instance.winnerPoints[Sonderpunkte.karlchenLoser]!;
 
   @override
   Widget build(BuildContext context) {
@@ -42,16 +48,16 @@ class _KarlchenState extends State<Karlchen> {
               karlWinner = value;
               });
               if(value) {
-                Env.winnerPoints[punkte.karlchenWinner] = true;
+                Runde.instance.winnerPoints[Sonderpunkte.karlchenWinner] = true;
               } else {
-                Env.winnerPoints[punkte.karlchenWinner] = false;
+                Runde.instance.winnerPoints[Sonderpunkte.karlchenWinner] = false;
               }
             }),
             Text("Ja", style: Helpers.getStyleForSwitch(context),),
           ],
         ),
         const Spacer(),
-        Helpers.getQuestionnaireInfo(context, "Karlchen für die Gewinner?"),
+        Helpers.getQuestionnaireInfo(context, "Karlchen für die Verlierer?"),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -62,9 +68,9 @@ class _KarlchenState extends State<Karlchen> {
                 karlLoser = value;
               });
               if(value) {
-                Env.winnerPoints[punkte.karlchenLoser] = true;
+                Runde.instance.winnerPoints[Sonderpunkte.karlchenLoser] = true;
               } else {
-                Env.winnerPoints[punkte.karlchenLoser] = false;
+                Runde.instance.winnerPoints[Sonderpunkte.karlchenLoser] = false;
               }
             }),
             Text("Ja", style: Helpers.getStyleForSwitch(context),),

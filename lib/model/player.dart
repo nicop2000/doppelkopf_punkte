@@ -1,19 +1,43 @@
 class Player {
   final String _name;
-  String uid = "";
-  List <int> _points = [0];
+  String uid = "null";
+  List<int> _points = [0];
   List<int> _won = [0];
   List<int> _lost = [0];
   List<int> _solo = [0];
 
+  Player.fromJson(Map<dynamic, dynamic> json)
+      : _name = json['name'],
+        uid = json['uid'],
+        _points =
+            (json['points'] as List<Object?>)
+                .map((e) =>
+                int.parse(e!.toString()))
+                .toList(),
+        _lost = (json['lost'] as List<Object?>)
+            .map((e) =>
+            int.parse(e!.toString()))
+            .toList(),
+        _solo = (json['solo'] as List<Object?>)
+            .map((e) =>
+            int.parse(e!.toString()))
+            .toList();
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'name': _name,
+        'uid': uid,
+        'points': _points,
+        'lost': _lost,
+        'solo': _solo,
+      };
+
   Player(this._name);
 
-
   Player newPoints(int p) {
-
     _points.add(getLastScore() + p);
     return this;
   }
+
   int getLastScore() {
     return _points.last;
   }
@@ -27,8 +51,11 @@ class Player {
   }
 
   List<int> getAllPoints() => _points;
+
   List<int> getAllWon() => _won;
+
   List<int> getAllLost() => _lost;
+
   List<int> getAllSolo() => _solo;
 
   String getName() => _name;
@@ -84,12 +111,11 @@ class Player {
       lost();
       newPoints(points);
     }
-    if(solo) {
+    if (solo) {
       this.solo();
     } else {
       _solo.add(_solo.last);
     }
     return this;
   }
-
 }

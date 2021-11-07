@@ -7,6 +7,8 @@ import 'package:doppelkopf_punkte/doko/saved_lists.dart';
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/model/friend.dart';
+import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:doppelkopf_punkte/scanner.dart';
 import 'package:doppelkopf_punkte/usersPage/login.dart';
 import 'package:doppelkopf_punkte/usersPage/register.dart';
@@ -20,26 +22,39 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helper/constants.dart';
-
 /// Diese App ist der Anwesenheitsmelder für Studenten der FH-Kiel.
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  Env.prefs = await SharedPreferences.getInstance();
-  if (FirebaseAuth.instance.currentUser != null) Env.archivedLists = await Helpers.getMyList();
-  Env.controller.add("ERRRROOOR");
-  Env.canCheckBio = await Env.localAuth.canCheckBiometrics;
-  Env.deviceSupported = await Env.localAuth.isDeviceSupported();
+  EnviromentVariables.prefs = await SharedPreferences.getInstance();
   if (FirebaseAuth.instance.currentUser != null) {
-    Helpers.userLoggedIn(FirebaseAuth.instance.currentUser!);
+    await Helpers.userLoggedIn();
+    var b =  await Constants.realtimeDatabase.child('gamelists/${FirebaseAuth.instance.currentUser!.uid}').get();
+int br = 2;
   }
+  AppUser.instance.canCheckBio = await AppUser.instance.localAuth.canCheckBiometrics;
+  AppUser.instance.deviceSupported = await AppUser.instance.localAuth.isDeviceSupported();
+
 
   runApp(const DokoPunkte());
 }
 
-class DokoPunkte extends StatelessWidget {
+class DokoPunkte extends StatefulWidget {
   const DokoPunkte({Key? key}) : super(key: key);
+
+  static void setAppState(BuildContext context) {
+    context.findAncestorStateOfType<_DokoPunkteState>()!.restartApp();
+  }
+
+  @override
+  State<DokoPunkte> createState() => _DokoPunkteState();
+}
+
+class _DokoPunkteState extends State<DokoPunkte> {
+  void restartApp() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,15 +65,15 @@ class DokoPunkte extends StatelessWidget {
           background: PersistentData.getBackground(),
           onBackground: PersistentData.getOnBackground(),
           primary: PersistentData.getPrimaryColor(),
-          primaryVariant: Colors.red,
+          primaryVariant: Colors.teal,
           onPrimary: PersistentData.getOnPrimary(),
-          secondary: Colors.red,
+          secondary: PersistentData.getActive(),
           secondaryVariant: Colors.red,
           onSecondary: Colors.red,
           error: Colors.red,
           onError: Colors.deepPurpleAccent,
           surface: Colors.teal,
-          onSurface: Colors.red,
+          onSurface: Colors.teal,
         ),
       ),
       initialRoute: "/",
@@ -93,15 +108,12 @@ class _AppOverlayState extends State<AppOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    Env.playersAdd.listen((event) {
-      print("EVENT: $event");
-    });
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
+            tooltip: "Accountinformationen",
             icon: Icon(
               Icons.account_circle_outlined,
               color: Theme.of(context).colorScheme.background,
@@ -120,7 +132,7 @@ class _AppOverlayState extends State<AppOverlay> {
           canvasColor: Theme.of(context).colorScheme.primary,
         ),
         child: BottomNavigationBar(
-            key: Env.keyBottomNavBar,
+            key: EnviromentVariables.keyBottomNavBar,
             type: BottomNavigationBarType.shifting,
             selectedItemColor: PersistentData.getActive(),
             iconSize: 25,
@@ -129,11 +141,8 @@ class _AppOverlayState extends State<AppOverlay> {
             ),
             unselectedItemColor: Theme.of(context).colorScheme.background,
             onTap: (index) {
-              print(index);
               _index = index;
-              setState(() {
-                print(index);
-              });
+              setState(() {});
             },
             currentIndex: _index,
             showSelectedLabels: true,
@@ -237,23 +246,119 @@ class _AppOverlayState extends State<AppOverlay> {
                               ),
                             ),
                             const Spacer(),
-                            OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                    width: 1.0, color: Constants.mainGrey),
-                              ),
-                              label: Text(
-                                "Logout",
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
+                            IconButton(
+                              tooltip: "Alle lokalen Daten löschen",
+                              color: Theme.of(context).colorScheme.primary,
+                              onPressed: () async {
+                                if (await Helpers.authenticate()) {
+                                  showCupertinoDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return CupertinoAlertDialog(
+                                          title: const Text("Achtung"),
+                                          content: const Text(
+                                              "Du bist im Begriff, alle lokalen Daten zu löschen. Dies beinhaltet alle nicht abgeschlossenen Listen und du wirst ausgeloggt. Willst du fortfahren? (Kann nicht rückgänig gemacht werden)"),
+                                          actions: <Widget>[
+                                            CupertinoDialogAction(
+                                                child: const Text("Ja"),
+                                                onPressed: () {
+                                                  EnviromentVariables.prefs
+                                                      .clear();
+                                                  DokoPunkte.setAppState(
+                                                      context);
+                                                  FirebaseAuth.instance
+                                                      .signOut();
+                                                  Navigator.of(context).pop();
+                                                }),
+                                            CupertinoDialogAction(
+                                                child: const Text("Nein"),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                }),
+                                          ],
+                                        );
+                                      });
+                                }
+                              },
                               icon: Icon(
-                                CupertinoIcons.lock_fill,
+                                CupertinoIcons.bin_xmark,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
-                              onPressed: () => FirebaseAuth.instance.signOut(),
                             ),
+                            const Spacer(),
+                            IconButton(
+                              tooltip: "Alle Daten löschen",
+                              color: Theme.of(context).colorScheme.primary,
+                              onPressed: () async {
+                                if (await Helpers.authenticate()) {
+                                  showCupertinoDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return CupertinoAlertDialog(
+                                          title: const Text("Achtung"),
+                                          content: const Text(
+                                              "Du bist im Begriff, alle deine Daten zu löschen. Das beinhaltet sämtliche lokalen Speicher als auch die Online-Daten und dein Konto. Willst du wirklich fortfahren? (Kann nicht rückgängig gemacht werden)"),
+                                          actions: <Widget>[
+                                            CupertinoDialogAction(
+                                                child: const Text("Ja"),
+                                                onPressed: () async {
+                                                  EnviromentVariables.prefs
+                                                      .clear();
+                                                  await Constants
+                                                      .realtimeDatabase
+                                                      .child(
+                                                          'friends/${FirebaseAuth.instance.currentUser!.uid}')
+                                                      .remove();
+                                                  await Constants
+                                                      .realtimeDatabase
+                                                      .child(
+                                                          'lists/${FirebaseAuth.instance.currentUser!.uid}')
+                                                      .remove();
+                                                  FirebaseAuth
+                                                      .instance.currentUser!
+                                                      .delete();
+                                                  DokoPunkte.setAppState(
+                                                      context);
+                                                  Navigator.of(context).pop();
+                                                }),
+                                            CupertinoDialogAction(
+                                                child: const Text("Nein"),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                }),
+                                          ],
+                                        );
+                                      });
+                                }
+                              },
+                              icon: Icon(
+                                CupertinoIcons.clear_thick,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              tooltip: "Freunde verwalten",
+                              color: Theme.of(context).colorScheme.primary,
+                              onPressed: () async {
+                                _showFriendManagement(context);
+                              },
+                              icon: Icon(
+                                CupertinoIcons.rectangle_stack_person_crop,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                                tooltip: "Logout",
+                                icon: Icon(
+                                  CupertinoIcons.lock_fill,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                onPressed: () async {
+                                  await FirebaseAuth.instance.signOut();
+                                  await Helpers.initFriends();
+                                }),
                             const Spacer(),
                             IconButton(
                               tooltip: "Schließen",
@@ -320,21 +425,26 @@ class _AppOverlayState extends State<AppOverlay> {
                                     Theme.of(context).colorScheme.onBackground,
                               ),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextButton(
+                                onPressed: () => pushNewScreen(
+                                  context,
+                                  screen: const Scanner(),
+                                ),
+                                child: Text(
+                                  "Freund hinzufügen",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                        TextButton(
-                          onPressed: () => pushNewScreen(
-                            context,
-                            screen: const Scanner(),
-                          ),
-                          child: Text(
-                            "Freund hinzufügen",
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ),
+                        const SizedBox(),
                       ],
                     ),
                   ),
@@ -410,13 +520,13 @@ class _AppOverlayState extends State<AppOverlay> {
                         IconButton(
                           tooltip: "Schließen",
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(
+                          icon: Icon(
                             CupertinoIcons.clear_circled,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
                     ),
-                    const Spacer(),
                     const Login(),
                     const Spacer(),
                   ],
@@ -454,13 +564,13 @@ class _AppOverlayState extends State<AppOverlay> {
                         IconButton(
                           tooltip: "Schließen",
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(
+                          icon: Icon(
                             CupertinoIcons.clear_circled,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
                     ),
-                    const Spacer(),
                     const Register(),
                     const Spacer(),
                   ],
@@ -471,5 +581,102 @@ class _AppOverlayState extends State<AppOverlay> {
         );
       },
     );
+  }
+
+  Widget buildSheet() {
+    return DraggableScrollableSheet(
+      minChildSize: 0.9,
+      initialChildSize: 1,
+      builder: (_, controller) {
+        return Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: ListView(
+            controller: controller,
+            children: [
+              Row(
+                children: [
+                  const Spacer(),
+                  IconButton(
+                    tooltip: "Schließen",
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(
+                      CupertinoIcons.clear_circled,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: StatefulBuilder(
+                    builder: (BuildContext bc, StateSetter managementState) {
+                  Widget getFriend(Friend friend) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          friend.name,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onBackground,
+                            fontSize: 18,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.remove_circle_rounded,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: () async {
+                            await Constants.realtimeDatabase
+                                .child(
+                                    'friends/${FirebaseAuth.instance.currentUser!.uid}')
+                                .update({friend.uid: null});
+                            await Helpers.getFriends();
+                            managementState(() {});
+                          },
+                        ),
+                      ],
+                    );
+                  }
+
+                  return Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        if (AppUser.instance.friends.length <= 3)
+                          Center(
+                              child: Text("Du hast noch keine Freunde :c",
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onBackground)))
+                        else
+                          for (Friend friend in AppUser.instance.friends)
+                            if (friend.uid != "null") getFriend(friend)
+                      ]);
+                }),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFriendManagement(BuildContext context) {
+    showModalBottomSheet(
+        backgroundColor: Theme.of(context).colorScheme.background,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        isScrollControlled: true,
+        constraints: BoxConstraints.tight(
+            Size.fromHeight(MediaQuery.of(context).size.height * 0.85)),
+        context: context,
+        builder: (BuildContext bc) {
+          return StatefulBuilder(
+              builder: (BuildContext bc, StateSetter bottomModalStateSetter) {
+            return buildSheet();
+          });
+        });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:doppelkopf_punkte/usersPage/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,6 +18,13 @@ class _LoginState extends State<Login> {
   String errorMsg = "";
   TextEditingController emailLogin = TextEditingController();
   TextEditingController passwordLogin = TextEditingController();
+
+  @override
+  void dispose() {
+    emailLogin.dispose();
+    passwordLogin.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,11 +77,10 @@ class _LoginState extends State<Login> {
           onPressed: () async {
             errorMsg = "";
             try {
-              UserCredential userCredentials = await FirebaseAuth.instance
+              UserCredential uC = await FirebaseAuth.instance
                   .signInWithEmailAndPassword(
                       email: emailLogin.text, password: passwordLogin.text);
-
-              Helpers.userLoggedIn(userCredentials.user!);
+              AppUser.instance.user = uC.user!;
               Navigator.of(context).pop();
             } on FirebaseAuthException catch (e) {
               if (e.code == 'user-not-found' || e.code == 'wrong-password') {
@@ -127,6 +134,7 @@ class _LoginState extends State<Login> {
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
+                    // Navigator.of(context).pop();
                       _showRegister(context);
                     }),
             ],
@@ -161,13 +169,14 @@ class _LoginState extends State<Login> {
                         IconButton(
                           tooltip: "Schließen",
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(
+                          icon: Icon(
                             CupertinoIcons.clear_circled,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
                     ),
-                    const Spacer(),
+
                     const Register(),
                     const Spacer(),
                   ],
@@ -181,6 +190,7 @@ class _LoginState extends State<Login> {
   }
 
   void createAlertDialog(BuildContext context) {
+
     TextEditingController _controllerDialog = TextEditingController();
     showDialog(
 

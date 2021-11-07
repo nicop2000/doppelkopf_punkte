@@ -1,6 +1,8 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:doppelkopf_punkte/model/player.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -12,19 +14,18 @@ class Result extends StatefulWidget {
 }
 
 class _ResultState extends State<Result> {
-  int pointsForWinners = 1;
+  int pointsForWinners = 0;
   int winners = 0;
 
   @override
   void initState() {
     super.initState();
 
-
-    pointsForWinners = Env.pointsWinner + 1;
+    pointsForWinners = Runde.instance.pointsWinner + 1;
     winners = 0;
 
-    Env.wonPoints.forEach((player, played) {
-      if(played) winners++;
+    Runde.instance.wonPoints.forEach((player, played) {
+      if (played) winners++;
     });
 
     bool solo = false;
@@ -34,55 +35,98 @@ class _ResultState extends State<Result> {
       solo = true;
     }
 
-    if (winners == 3) solo = true;
+    if (winners == 3) {
+      solo = true;
+    }
+    List<String> result = [];
 
-    Env.winnerPoints[punkte.gegenDieAlten]! ? pointsForWinners++ : null;
-    Env.winnerPoints[punkte.fuchs1Winner]! ? pointsForWinners++ : null;
-    Env.winnerPoints[punkte.fuchs2Winner]! ? pointsForWinners++ : null;
-    Env.winnerPoints[punkte.fuchs1Loser]! ? pointsForWinners-- : null;
-    Env.winnerPoints[punkte.fuchs2Loser]! ? pointsForWinners-- : null;
-    Env.winnerPoints[punkte.herzdurchlaufWinner]! ? pointsForWinners++ : null;
-    Env.winnerPoints[punkte.herzdurchlaufLoser]! ? pointsForWinners-- : null;
-    Env.winnerPoints[punkte.karlchenWinner]! ? pointsForWinners++ : null;
-    Env.winnerPoints[punkte.karlchenLoser]! ? pointsForWinners-- : null;
-    if (Env.winnerPoints[punkte.gegenDieAlten]! &&
-        Env.winnerPoints[punkte.re]! && !solo) {
+
+    if (Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]!) {
+      pointsForWinners++;
+      result.add("Gegen die Alten +1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.fuchs1Winner]!) {
+      pointsForWinners++;
+      result.add("1. Fuchs gefangen +1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.fuchs2Winner]!) {
+      pointsForWinners++;
+      result.add("2. Fuchs gefangen +1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.fuchs1Loser]!) {
+      pointsForWinners--;
+      result.add("Gegner: 1. Fuchs gefangen -1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.fuchs2Loser]!) {
+      pointsForWinners--;
+      result.add("Gegner: 2. Fuchs gefangen -1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufWinner]!) {
+      pointsForWinners++;
+      result.add("Herzdurchlauf +1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufLoser]!) {
+      pointsForWinners--;
+      result.add("Gegner: Herzdurchlauf -1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.karlchenWinner]!) {
+      pointsForWinners++;
+      result.add("Karlchen +1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.karlchenLoser]!) {
+      pointsForWinners--;
+      result.add("Gegner: Karlchen -1");
+    }
+    if (Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
+        Runde.instance.winnerPoints[Sonderpunkte.re]! &&
+        !solo) {
+      result.add("Re +2");
       pointsForWinners += 2;
     }
-    if (Env.winnerPoints[punkte.gegenDieAlten]! &&
-        Env.winnerPoints[punkte.kontra]! && !solo) {
+    if (Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
+        Runde.instance.winnerPoints[Sonderpunkte.kontra]! &&
+        !solo) {
+      result.add("Kontra +2");
       pointsForWinners += 2;
     }
-    if (!Env.winnerPoints[punkte.gegenDieAlten]! &&
-        Env.winnerPoints[punkte.kontra]! && !solo) {
+    if (!Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
+        Runde.instance.winnerPoints[Sonderpunkte.kontra]! &&
+        !solo) {
+      result.add("Kontra +2");
       pointsForWinners += 2;
     }
-    if (!Env.winnerPoints[punkte.gegenDieAlten]! &&
-        Env.winnerPoints[punkte.re]! && !solo) {
-      pointsForWinners -= 2;
+    if (!Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
+        Runde.instance.winnerPoints[Sonderpunkte.re]! &&
+        !solo) {
+      result.add("Re +2");
+      pointsForWinners += 2;
     }
 
-    if (winners == 1 && Env.winnerPoints[punkte.re]!) {
-      pointsForWinners +=2;
+    if (winners == 1 && Runde.instance.winnerPoints[Sonderpunkte.re]!) {
+      pointsForWinners += 2;
+      result.add("Solo +1");
     }
 
-    if (winners == 3 && Env.winnerPoints[punkte.re]!) {
-      pointsForWinners -=2;
+    if (winners == 1 && Runde.instance.winnerPoints[Sonderpunkte.kontra]!) {
+      pointsForWinners += 2;
+      result.add("Kontra +2");
     }
 
-    if (winners == 1 && Env.winnerPoints[punkte.kontra]!) {
-      pointsForWinners +=2;
+    if (winners == 3 && Runde.instance.winnerPoints[Sonderpunkte.re]!) {
+      pointsForWinners += 2;
+      result.add("Re -2");
     }
 
-    if (winners == 3 && Env.winnerPoints[punkte.kontra]!) {
-      pointsForWinners -=2;
+
+    if (winners == 3 && Runde.instance.winnerPoints[Sonderpunkte.kontra]!) {
+      pointsForWinners += 2;
+      result.add("Kontra +2");
     }
 
-    pointsForWinners += Env.dokoWinner;
-    pointsForWinners -= Env.dokoLoser;
-
-
-
+    pointsForWinners += Runde.instance.dokoWinner;
+    result.add("Doppelkopf +${Runde.instance.dokoWinner}");
+    pointsForWinners -= Runde.instance.dokoLoser;
+    result.add("Doppelkopf -${Runde.instance.dokoLoser}");
   }
 
   @override
@@ -93,69 +137,53 @@ class _ResultState extends State<Result> {
       children: [
         Helpers.getQuestionnaireHeadline(context, "Rundenergebnis"),
         const Spacer(flex: 3),
-        Helpers.getQuestionnaireInfo(context, "Die Gewinner haben $pointsForWinners Punkte erzielt"),
+        Helpers.getQuestionnaireInfo(
+            context, "Die Gewinner haben $pointsForWinners Punkte erzielt"),
+
         CupertinoButton(
-            onPressed: () {
-              if(winners == 0) {
-                noPlayersSelected(context);
-                return;
-              }
+          onPressed: () {
+            if (winners == 0) {
+              noPlayersSelected(context);
+              return;
+            }
 
-              if (winners == 3){
-                Env.wonPoints.forEach((player, played) {
-                  
-                  if (played) {
-                    player.won().newScore(true, false, pointsForWinners);
-                  } else {
-                    player.newScore(false, true, pointsForWinners * -3);
-                  }
-                  
-                });
-                Env.game.newRound();
-              } else if (winners == 1){
-                Env.wonPoints.forEach((player, played) {
-
-                  if (played) {
-                    player.newScore(true, true, pointsForWinners * 3);
-                  } else {
-                    player.newScore(false, false, pointsForWinners * -1);
-                  }
-
-                });
-                Env.game.newRound();
-              } else if (winners == 2){
-                Env.wonPoints.forEach((player, played) {
-
-                  if (played) {
-                    player.newScore(true, false, pointsForWinners);
-                  } else {
-                    player.newScore(false, false, pointsForWinners * -1);
-                  }
-
-                });
-                Env.game.newRound();
-              } else {
-
-              }
-                for (punkte p in punkte.values) {
-                  Env.winnerPoints.addAll({p: false});
+            if (winners == 3) {
+              Runde.instance.wonPoints.forEach((player, played) {
+                if (played) {
+                  player.won().newScore(true, false, pointsForWinners);
+                } else {
+                  player.newScore(false, true, pointsForWinners * -3);
                 }
-                for (Player p in Env.game.players) {
-                  Env.wonPoints.addAll({p: false});
+              });
+              Game.instance.newRound();
+            } else if (winners == 1) {
+              Runde.instance.wonPoints.forEach((player, played) {
+                if (played) {
+                  player.newScore(true, true, pointsForWinners * 3);
+                } else {
+                  player.newScore(false, false, pointsForWinners * -1);
                 }
-                winners = 0;
-                Env.pointSelection = null;
-                Helpers.saveList();
-              final BottomNavigationBar navigationBar = Env.keyBottomNavBar.currentWidget as BottomNavigationBar;
-              navigationBar.onTap!(0);
+              });
+              Game.instance.newRound();
+            } else if (winners == 2) {
+              Runde.instance.wonPoints.forEach((player, played) {
+                if (played) {
+                  player.newScore(true, false, pointsForWinners);
+                } else {
+                  player.newScore(false, false, pointsForWinners * -1);
+                }
+              });
+              Game.instance.newRound();
+            }
 
-
-
-
-            }, 
-            child: const Text("Hinzufügen"),
+            winners = 0;
+            Game.instance.saveList();
+            final BottomNavigationBar navigationBar =
+                EnviromentVariables.keyBottomNavBar.currentWidget as BottomNavigationBar;
+            navigationBar.onTap!(0);
+          },
+          child: const Text("Hinzufügen"),
         ),
-
         const Spacer(flex: 3),
       ],
     );
@@ -177,7 +205,8 @@ class _ResultState extends State<Result> {
         "Zu wenig Spieler ausgewählt",
         style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
       ),
-      content: Text("Es muss mindestens 1 Spieler auf der ersten Seite ausgewählt (grün hinterlegt) sein",
+      content: Text(
+          "Es muss mindestens 1 Spieler auf der ersten Seite ausgewählt (grün hinterlegt) sein",
           style: TextStyle(color: Theme.of(context).colorScheme.onBackground)),
       actions: [okButton],
     );
@@ -189,5 +218,4 @@ class _ResultState extends State<Result> {
       },
     );
   }
-
 }

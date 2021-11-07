@@ -1,6 +1,7 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
@@ -29,12 +30,12 @@ class _DoKosState extends State<DoKos> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             NumberPicker(
-              value: Env.dokoWinner,
+              value: Runde.instance.dokoWinner,
               textStyle: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 17),
               selectedTextStyle: TextStyle(color: PersistentData.getActive(), fontSize: 30, fontWeight: FontWeight.w600),
               minValue: 0,
               maxValue: 5,
-              onChanged: (value) => setState(() => Env.dokoWinner = value),
+              onChanged: (value) => setState(() => Runde.instance.dokoWinner = value),
             ),
           ],
         ),
@@ -44,12 +45,12 @@ class _DoKosState extends State<DoKos> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             NumberPicker(
-              value: Env.dokoLoser,
+              value: Runde.instance.dokoLoser,
               textStyle: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 17),
               selectedTextStyle: TextStyle(color: PersistentData.getActive(), fontSize: 30, fontWeight: FontWeight.w600),
               minValue: 0,
               maxValue: 5,
-              onChanged: (value) => setState(() => Env.dokoLoser = value),
+              onChanged: (value) => setState(() => Runde.instance.dokoLoser = value),
             ),
           ],
         ),

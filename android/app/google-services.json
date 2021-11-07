@@ -1,15 +1,16 @@
 {
   "project_info": {
     "project_number": "128750895730",
+    "firebase_url": "https://doppelkopf-punkte-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "doppelkopf-punkte",
     "storage_bucket": "doppelkopf-punkte.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:128750895730:android:5af0e11798f5683f8a38eb",
+        "mobilesdk_app_id": "1:128750895730:android:1685dbe1e9f4ab098a38eb",
         "android_client_info": {
-          "package_name": "de.petersen.nico.doppelkopf.punkte"
+          "package_name": "de.petersen.nico.doko.punkte"
         }
       },
       "oauth_client": [
@@ -29,6 +30,13 @@
             {
               "client_id": "128750895730-0s99hdtblg3kt0t157ddj75nb102hm4p.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "128750895730-60ia8ilbgdrofd67qobm0h588nan6flh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "de.petersen.doko.punkte"
+              }
             }
           ]
         }

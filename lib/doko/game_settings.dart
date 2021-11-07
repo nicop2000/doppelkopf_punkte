@@ -1,4 +1,5 @@
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -63,8 +64,7 @@ class _GameSettingsState extends State<GameSettings> {
                 primary!.red, primary.green, primary.blue, primary.opacity);
             PersistentData.setActive(
                 active!.red, active.green, active.blue, active.opacity);
-          setState(() {
-          });
+            DokoPunkte.setAppState(context);
         },
         child: Container(
           decoration: BoxDecoration(

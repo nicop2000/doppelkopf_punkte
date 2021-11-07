@@ -2,12 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Die Einstellungen sind ein sensibler Bereich, weshalb der Bereich extra abgesichert ist</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Die Kamera wird für die Freundefunktion benötigt</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>DoKo Punkte</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,9 +21,17 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Die Kamera wird für die Freundefunktion benötigt. Alle Daten bleiben auf dem Gerät und werden nicht ausgewertet</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Die Einstellungen sind ein sensibler Bereich, weshalb der Bereich extra abgesichert ist. Alle Daten bleiben auf dem Gerät und werden nicht ausgewertet</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Diese Funktion wird für die Freundefunktion benötigt. Alle Daten bleiben auf dem Gerät und werden nicht ausgewertet</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

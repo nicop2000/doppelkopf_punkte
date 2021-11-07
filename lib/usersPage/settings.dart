@@ -29,6 +29,15 @@ class _SettingsState extends State<Settings> {
   TextEditingController extra = TextEditingController();
 
   @override
+  void dispose() {
+    oldV.dispose();
+    newV.dispose();
+    newVRep.dispose();
+    extra.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Map<int, Widget> content = {
       0: Expanded(

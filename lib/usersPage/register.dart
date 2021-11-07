@@ -1,3 +1,4 @@
+import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:doppelkopf_punkte/helper/constants.dart';
@@ -20,6 +21,15 @@ class _RegisterState extends State<Register> {
     TextEditingController passwordRegister = TextEditingController();
     TextEditingController passwordRepeatRegister = TextEditingController();
     TextEditingController nameRegister = TextEditingController();
+
+    @override
+  void dispose() {
+    emailRegister.dispose();
+    passwordRegister.dispose();
+    passwordRepeatRegister.dispose();
+    nameRegister.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,29 +119,26 @@ class _RegisterState extends State<Register> {
             onPressed:  () async {
               if (_formKey.currentState!.validate()) {
                 try {
-                  UserCredential userCredentials = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                  UserCredential uC = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                       email: emailRegister.text,
                       password: passwordRegister.text
                   );
-                  User user = userCredentials.user!;
-                  user.updateDisplayName(nameRegister.text);
-                  Helpers.userLoggedIn(userCredentials.user!);
+                  AppUser.instance.user = uC.user!;
+
+                  AppUser.instance.user.updateDisplayName(nameRegister.text);
+                  AppUser.instance.user.sendEmailVerification();
+                  Helpers.userLoggedIn();
                   Navigator.of(context).pop();
                 } on FirebaseAuthException catch (e) {
-                  print("FIREBASEAUTHEXCEPTION");
 
                   if (e.code == 'weak-password') {
-                    print('The password provided is too weak.');
                     setState(() {
-
                     errorMsg = "Das eingegebene Passwort ist zu schwach. "
                         "Ein starkes Passwort besteht aus Groß- und "
                         "Kleinbuchstaben, Zahlen und Sonderzeichen";
                     });
                   } else if (e.code == 'email-already-in-use') {
-                    print('The account already exists for that email.');
                     setState(() {
-
                     errorMsg = "Es existiert bereits ein Account mit dieser "
                         "E-Mailadresse";
                     });
@@ -140,7 +147,6 @@ class _RegisterState extends State<Register> {
                 } catch (e) {
                   setState(() {
                     errorMsg = e.toString();
-                    print("ERROR:  $e");
                   });
                 }
                 return;

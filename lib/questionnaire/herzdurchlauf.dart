@@ -1,6 +1,6 @@
-import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -18,8 +18,8 @@ bool t() {
 
 class _HerzState extends State<Herz> {
 
-  bool hdWinner = Env.winnerPoints[punkte.herzdurchlaufWinner]!;
-  bool hdLoser = Env.winnerPoints[punkte.herzdurchlaufLoser]!;
+  bool hdWinner = Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufWinner]!;
+  bool hdLoser = Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufLoser]!;
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +45,9 @@ class _HerzState extends State<Herz> {
               hdWinner = value;
               });
               if(value) {
-                Env.winnerPoints[punkte.herzdurchlaufWinner] = true;
+                Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufWinner] = true;
               } else {
-                Env.winnerPoints[punkte.herzdurchlaufWinner] = false;
+                Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufWinner] = false;
               }
             }),
             Text("Ja", style: TextStyle(
@@ -69,9 +69,9 @@ class _HerzState extends State<Herz> {
                 hdLoser = value;
               });
               if(value) {
-                Env.winnerPoints[punkte.herzdurchlaufLoser] = true;
+                Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufLoser] = true;
               } else {
-                Env.winnerPoints[punkte.herzdurchlaufLoser] = false;
+                Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufLoser] = false;
               }
             }),
             Text("Ja", style: Helpers.getStyleForSwitch(context),),

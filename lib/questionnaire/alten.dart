@@ -1,6 +1,6 @@
-import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -20,13 +20,7 @@ class _AltenState extends State<Alten> {
     return isOn;
   }
 
-  @override
-  void initState() {
-    print("init");
-    super.initState();
-  }
-
-  bool isOn = Env.winnerPoints[punkte.gegenDieAlten]!;
+  bool isOn = Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]!;
 
   @override
   Widget build(BuildContext context) {
@@ -48,12 +42,13 @@ class _AltenState extends State<Alten> {
               value: isOn,
               onChanged: (value) {
                 setState(() {
+
                   isOn = value;
                 });
                 if (value) {
-                  Env.winnerPoints[punkte.gegenDieAlten] = true;
+                  Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten] = true;
                 } else {
-                  Env.winnerPoints[punkte.gegenDieAlten] = false;
+                  Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten] = false;
                 }
               },
               activeColor: PersistentData.getActive(),

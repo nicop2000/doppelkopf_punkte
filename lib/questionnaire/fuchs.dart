@@ -1,6 +1,7 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -17,10 +18,10 @@ class _FuchsState extends State<Fuchs> {
     super.initState();
   }
 
-  bool fuchs1Winner = Env.winnerPoints[punkte.fuchs1Winner]!;
-  bool fuchs2Winner = Env.winnerPoints[punkte.fuchs2Winner]!;
-  bool fuchs1Loser = Env.winnerPoints[punkte.fuchs1Loser]!;
-  bool fuchs2Loser = Env.winnerPoints[punkte.fuchs2Loser]!;
+  bool fuchs1Winner = Runde.instance.winnerPoints[Sonderpunkte.fuchs1Winner]!;
+  bool fuchs2Winner = Runde.instance.winnerPoints[Sonderpunkte.fuchs2Winner]!;
+  bool fuchs1Loser = Runde.instance.winnerPoints[Sonderpunkte.fuchs1Loser]!;
+  bool fuchs2Loser = Runde.instance.winnerPoints[Sonderpunkte.fuchs2Loser]!;
 
   @override
   Widget build(BuildContext context) {
@@ -46,9 +47,9 @@ class _FuchsState extends State<Fuchs> {
                   fuchs1Winner = value;
                 });
                 if (value) {
-                  Env.winnerPoints[punkte.fuchs1Winner] = true;
+                  Runde.instance.winnerPoints[Sonderpunkte.fuchs1Winner] = true;
                 } else {
-                  Env.winnerPoints[punkte.fuchs1Winner] = false;
+                  Runde.instance.winnerPoints[Sonderpunkte.fuchs1Winner] = false;
                 }
               },
               activeColor: PersistentData.getActive(),
@@ -74,9 +75,9 @@ class _FuchsState extends State<Fuchs> {
                   fuchs2Winner = value;
                 });
                 if (value) {
-                  Env.winnerPoints[punkte.fuchs2Winner] = true;
+                  Runde.instance.winnerPoints[Sonderpunkte.fuchs2Winner] = true;
                 } else {
-                  Env.winnerPoints[punkte.fuchs2Winner] = false;
+                  Runde.instance.winnerPoints[Sonderpunkte.fuchs2Winner] = false;
                 }
               },
               activeColor: PersistentData.getActive(),
@@ -104,9 +105,9 @@ class _FuchsState extends State<Fuchs> {
                   fuchs1Loser = value;
                 });
                 if (value) {
-                  Env.winnerPoints[punkte.fuchs1Loser] = true;
+                  Runde.instance.winnerPoints[Sonderpunkte.fuchs1Loser] = true;
                 } else {
-                  Env.winnerPoints[punkte.fuchs1Loser] = false;
+                  Runde.instance.winnerPoints[Sonderpunkte.fuchs1Loser] = false;
                 }
               },
               activeColor: PersistentData.getActive(),
@@ -133,9 +134,9 @@ class _FuchsState extends State<Fuchs> {
                     fuchs2Loser = value;
                   });
                   if (value) {
-                    Env.winnerPoints[punkte.fuchs2Loser] = true;
+                    Runde.instance.winnerPoints[Sonderpunkte.fuchs2Loser] = true;
                   } else {
-                    Env.winnerPoints[punkte.fuchs2Loser] = false;
+                    Runde.instance.winnerPoints[Sonderpunkte.fuchs2Loser] = false;
                   }
                 }),
             Text(
