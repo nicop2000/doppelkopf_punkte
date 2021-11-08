@@ -12,13 +12,13 @@ import 'package:doppelkopf_punkte/usersPage/login.dart';
 import 'package:doppelkopf_punkte/usersPage/register.dart';
 import 'package:doppelkopf_punkte/usersPage/settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_material_pickers/flutter_material_pickers.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 
 class GameList extends StatefulWidget {
   const GameList({Key? key}) : super(key: key);
@@ -118,13 +118,10 @@ class _GameListState extends State<GameList> {
                           onPressed: () {
                             Game.instance.setMaxRounds(_rounds);
 
-                              Game.instance.listname = listNameController.text;
-                              Game.instance.listname +=
-                                  " - ${DateTime.now()
-                                      .toIso8601String()
-                                      .substring(0, 16)
-                                      .replaceAll("T", " ")}";
-                              Game.instance.listname.replaceAll(".", "_");
+                            Game.instance.listname = listNameController.text;
+                            Game.instance.listname +=
+                                " - ${DateTime.now().toIso8601String().substring(0, 16).replaceAll("T", " ")}";
+                            Game.instance.listname.replaceAll(".", "_");
 
                             _showPlayerInput(context);
                           },
@@ -137,21 +134,14 @@ class _GameListState extends State<GameList> {
                             ),
                           ),
                         ),
-                        ElevatedButton(onPressed: () async {
-
-
-                          Runde.instance.init();
-                          setState(() {
-
-                          });
-                          int b = 2;
-
-                        }, child: Text("Back")),
-                        // if (EnviromentVariables.prefs.containsKey('lists'))
+                        if (AppUser.instance.pendingLists.isNotEmpty)
                           CupertinoButton(
                               child: const Text("Alte Liste wiederherstellen"),
-                              onPressed: () {
-                                List<String> items = AppUser.instance.archivedLists.map((e) => e.listname).toList();
+                              onPressed: () async {
+                                List<String> items = AppUser
+                                    .instance.pendingLists
+                                    .map((e) => e.listname)
+                                    .toList();
                                 String selectedList = items[0];
 
                                 showMaterialScrollPicker(
@@ -176,9 +166,11 @@ class _GameListState extends State<GameList> {
                                         () => selectedList = value as String),
                                     onConfirmed: () {
                                       setState(() {
-                                        for (Game game in AppUser.instance.archivedLists) {
-                                          if (game.listname == selectedList)
+                                        for (Game game
+                                            in AppUser.instance.pendingLists) {
+                                          if (game.listname == selectedList) {
                                             Game.instance.restoreList(game);
+                                          }
                                         }
                                         // Game.instance.restoreList(selectedList2);
                                       });
@@ -199,12 +191,25 @@ class _GameListState extends State<GameList> {
                         ),
                       Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: getList(),
+                        child: StickyHeader(
+                          header: Container(
+                            color: Theme.of(context).colorScheme.background,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 15.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: getList()
+                                    .map((e) => (e as Column).children.first)
+                                    .toList(),
+                              ),
+                            ),
+                          ),
+                          content: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: getListMinusHead(),
+                          ),
                         ),
                       ),
-
                       if (!(Game.instance.currentRound - 1 >=
                           Game.instance.maxRounds))
                         Padding(
@@ -222,23 +227,24 @@ class _GameListState extends State<GameList> {
                           ),
                         ),
                       if (Game.instance.currentRound > 1)
-                        if(!EnviromentVariables.review)
-                        CupertinoButton(
-                            // color: Theme.of(context).colorScheme.onPrimary,
-                            child: Text(
-                              "Letzten Eintrag löschen",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                        if (!EnviromentVariables.review)
+                          CupertinoButton(
+                              // color: Theme.of(context).colorScheme.onPrimary,
+                              child: Text(
+                                "Letzten Eintrag löschen",
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                               ),
-                            ),
-                            onPressed: () {
-                              Game.instance.currentRound--;
-                              for (var player in Game.instance.players) {
-                                player.removeLastRound();
-                              }
-                              Game.instance.saveList();
-                              setState(() {});
-                            }),
+                              onPressed: () {
+                                var b = Game.instance;
+                                Game.instance.currentRound--;
+                                for (var player in Game.instance.players) {
+                                  player.removeLastRound();
+                                }
+                                Game.instance.saveList();
+                                setState(() {});
+                              }),
                       CupertinoButton(
                           // color: Theme.of(context).colorScheme.onPrimary,
                           child: Text(
@@ -294,7 +300,8 @@ class _GameListState extends State<GameList> {
                             child: Text(
                                 "Punkte für ${Game.instance.players[0].getName()} in Datenbank übertragen & speichern"),
                             onPressed: () {
-                              Helpers.sendMyListToDB(Game.instance.players[0].uid);
+                              Helpers.sendMyListToDB(
+                                  Game.instance.players[0].uid);
                             }),
                       if (Game.instance.currentRound - 1 >=
                               Game.instance.maxRounds &&
@@ -303,7 +310,8 @@ class _GameListState extends State<GameList> {
                             child: Text(
                                 "Punkte für ${Game.instance.players[1].getName()} in Datenbank übertragen & speichern"),
                             onPressed: () {
-                              Helpers.sendMyListToDB(Game.instance.players[1].uid);
+                              Helpers.sendMyListToDB(
+                                  Game.instance.players[1].uid);
                             }),
                       if (Game.instance.currentRound - 1 >=
                               Game.instance.maxRounds &&
@@ -312,7 +320,8 @@ class _GameListState extends State<GameList> {
                             child: Text(
                                 "Punkte für ${Game.instance.players[2].getName()} in Datenbank übertragen & speichern"),
                             onPressed: () {
-                              Helpers.sendMyListToDB(Game.instance.players[2].uid);
+                              Helpers.sendMyListToDB(
+                                  Game.instance.players[2].uid);
                             }),
                       if (Game.instance.currentRound - 1 >=
                               Game.instance.maxRounds &&
@@ -321,7 +330,8 @@ class _GameListState extends State<GameList> {
                             child: Text(
                                 "Punkte für ${Game.instance.players[3].getName()} in Datenbank übertragen & speichern"),
                             onPressed: () {
-                              Helpers.sendMyListToDB(Game.instance.players[3].uid);
+                              Helpers.sendMyListToDB(
+                                  Game.instance.players[3].uid);
                             }),
                     ],
                   );
@@ -344,22 +354,35 @@ class _GameListState extends State<GameList> {
     );
   }
 
+  List<Widget> getListMinusHead() {
+    List<Widget> temp = getList();
+    temp.forEach((element) {
+      (element as Column).children[0] =
+          Opacity(opacity: 0.0, child: element.children[0]);
+    });
+    return temp;
+  }
+
   List<Widget> getList() {
     List<Widget> temp = [getRoundColumn(Game.instance)];
+    int indicator = 0;
     for (var player in Game.instance.players) {
-      temp.add(getPlayerColumn(player));
+      temp.add(getPlayerColumn(player, indicator));
+      indicator++;
     }
     return temp;
   }
 
   double spacing = 15.0;
 
-  TextStyle getListHeadline(BuildContext context) {
+  TextStyle getListHeadline(BuildContext context, bool geber) {
     return TextStyle(
       fontWeight: FontWeight.w600,
       decoration: TextDecoration.underline,
       fontSize: 16,
-      color: Theme.of(context).colorScheme.onBackground,
+      color: geber
+          ? PersistentData.getActive()
+          : Theme.of(context).colorScheme.onBackground,
     );
   }
 
@@ -367,7 +390,7 @@ class _GameListState extends State<GameList> {
     List<Widget> temp = [
       Text(
         "Runde",
-        style: getListHeadline(context),
+        style: getListHeadline(context, false),
       ),
       SizedBox(
         height: spacing,
@@ -389,11 +412,14 @@ class _GameListState extends State<GameList> {
     );
   }
 
-  Column getPlayerColumn(Player p) {
+  Column getPlayerColumn(Player p, int indicator) {
+      var b = Game.instance;
     List<Widget> temp = [
       Text(
         p.getName(),
-        style: getListHeadline(context),
+        style: getListHeadline(context,
+            ((((Game.instance.currentRound - 1) % 4) == indicator) && !(Game.instance.currentRound - 1 >=
+                Game.instance.maxRounds)) ? true : false),
       ),
       SizedBox(
         height: spacing,
@@ -548,12 +574,15 @@ class _GameListState extends State<GameList> {
                               return;
                             }
                           }
-                          print("Names ${Game.instance.names}");
                           String name =
                               FirebaseAuth.instance.currentUser!.displayName!;
                           Player self = Player(name);
                           self.uid = FirebaseAuth.instance.currentUser!.uid;
                           Game.instance.players.add(self);
+                          Game.instance.date = DateTime.now()
+                              .toIso8601String()
+                              .substring(0, 16)
+                              .replaceAll("T", " ");
                           if (extra1) {
                             Game.instance.players
                                 .add(Player(Game.instance.names[0]));

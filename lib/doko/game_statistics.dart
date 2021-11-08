@@ -1,3 +1,4 @@
+import 'package:doppelkopf_punkte/doko/graph.dart';
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:flutter/cupertino.dart';
@@ -44,6 +45,7 @@ class _GameStatisticsState extends State<GameStatistics> {
                 newPie(dataMapWon, "Gewonnen", context),
                 newPie(dataMapLost, "Verloren", context),
                 newPie(dataMapSolo, "Solos", context),
+                Graph(Game.instance)
               ],
             ),
           ),
@@ -74,7 +76,7 @@ class _GameStatisticsState extends State<GameStatistics> {
       padding: const EdgeInsets.symmetric(vertical: 15.0),
       child: PieChart(
         dataMap: dataMap,
-        animationDuration: const Duration(milliseconds: 800),
+        animationDuration: const Duration(milliseconds: 1000),
         centerText: text,
         chartRadius: MediaQuery.of(context).size.width * 0.55,
         chartLegendSpacing: 25,

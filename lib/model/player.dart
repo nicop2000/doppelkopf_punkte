@@ -14,6 +14,11 @@ class Player {
                 .map((e) =>
                 int.parse(e!.toString()))
                 .toList(),
+        _won =
+        (json['won'] as List<Object?>)
+            .map((e) =>
+            int.parse(e!.toString()))
+            .toList(),
         _lost = (json['lost'] as List<Object?>)
             .map((e) =>
             int.parse(e!.toString()))
@@ -27,6 +32,7 @@ class Player {
         'name': _name,
         'uid': uid,
         'points': _points,
+        'won' : _won,
         'lost': _lost,
         'solo': _solo,
       };

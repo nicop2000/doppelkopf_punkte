@@ -16,6 +16,8 @@ class AppUser {
   bool deviceSupported = false;
   List<BiometricType> availableBiometrics = [];
   List<Game> archivedLists = [];
+  List<Game> pendingLists = [];
+
 
 
 

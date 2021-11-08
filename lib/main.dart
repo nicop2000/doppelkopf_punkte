@@ -30,8 +30,6 @@ Future<void> main() async {
   EnviromentVariables.prefs = await SharedPreferences.getInstance();
   if (FirebaseAuth.instance.currentUser != null) {
     await Helpers.userLoggedIn();
-    var b =  await Constants.realtimeDatabase.child('gamelists/${FirebaseAuth.instance.currentUser!.uid}').get();
-int br = 2;
   }
   AppUser.instance.canCheckBio = await AppUser.instance.localAuth.canCheckBiometrics;
   AppUser.instance.deviceSupported = await AppUser.instance.localAuth.isDeviceSupported();
