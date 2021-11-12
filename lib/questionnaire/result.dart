@@ -141,7 +141,7 @@ class _ResultState extends State<Result> {
             context, "Die Gewinner haben $pointsForWinners Punkte erzielt"),
 
         CupertinoButton(
-          onPressed: () {
+          onPressed: () async{
             if (winners == 0) {
               noPlayersSelected(context);
               return;
@@ -177,9 +177,8 @@ class _ResultState extends State<Result> {
             }
 
             winners = 0;
-            Game.instance.saveList();
-            final BottomNavigationBar navigationBar =
-                EnviromentVariables.keyBottomNavBar.currentWidget as BottomNavigationBar;
+            await Game.instance.saveList(context);
+            final BottomNavigationBar navigationBar = EnviromentVariables.keyBottomNavBar.currentWidget as BottomNavigationBar;
             navigationBar.onTap!(0);
           },
           child: const Text("Hinzufügen"),

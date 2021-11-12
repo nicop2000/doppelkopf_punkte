@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:doppelkopf_punkte/helper/constants.dart';
+import 'package:doppelkopf_punkte/main.dart';
 import 'package:doppelkopf_punkte/model/friend.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -9,7 +12,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-
 
 enum routers { login, register, lectureHalls, registerSeat, admin }
 
@@ -19,10 +21,7 @@ class Helpers {
       child: Text(
         text,
         style: TextStyle(
-          color: Theme
-              .of(context)
-              .colorScheme
-              .onBackground,
+          color: Theme.of(context).colorScheme.onBackground,
           fontWeight: FontWeight.w700,
           decoration: TextDecoration.underline,
           fontSize: 24.0,
@@ -32,57 +31,55 @@ class Helpers {
   }
 
   static TextStyle getButtonStyle(BuildContext context) {
-    return TextStyle(color: Theme
-        .of(context)
-        .colorScheme
-        .primary);
+    return TextStyle(color: Theme.of(context).colorScheme.primary);
   }
 
   static TextStyle getStyleForSwitch(BuildContext context) {
     return TextStyle(
-      color: Theme
-          .of(context)
-          .colorScheme
-          .onBackground,
+      color: Theme.of(context).colorScheme.onBackground,
       fontWeight: FontWeight.w500,
       fontSize: 15,
     );
   }
 
   static Widget getQuestionnaireHeadline(BuildContext context, String msg) {
-    return Text(msg, style: TextStyle(
-      color: Theme
-          .of(context)
-          .colorScheme
-          .onBackground,
-      fontWeight: FontWeight.w800,
-      fontSize: 20,
-    ),);
+    return Text(
+      msg,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onBackground,
+        fontWeight: FontWeight.w800,
+        fontSize: 20,
+      ),
+    );
   }
 
   static Widget getQuestionnaireInfo(BuildContext context, String msg) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10.0,),
-      child: Text(msg, style: TextStyle(
-        color: Theme
-            .of(context)
-            .colorScheme
-            .onBackground,
-        fontWeight: FontWeight.w600,
-        fontSize: 17,
-      ), textAlign: TextAlign.center,),
+      padding: const EdgeInsets.only(
+        bottom: 10.0,
+      ),
+      child: Text(
+        msg,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onBackground,
+          fontWeight: FontWeight.w600,
+          fontSize: 17,
+        ),
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
   static Widget getQuestionnaireSubtext(BuildContext context, String msg) {
-    return Text(msg, style: TextStyle(
-      color: Theme
-          .of(context)
-          .colorScheme
-          .onBackground,
-      fontWeight: FontWeight.w400,
-      fontSize: 14,
-    ), textAlign: TextAlign.center,);
+    return Text(
+      msg,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onBackground,
+        fontWeight: FontWeight.w400,
+        fontSize: 14,
+      ),
+      textAlign: TextAlign.center,
+    );
   }
 
   static Widget getErrorDisplay(String text) {
@@ -101,7 +98,6 @@ class Helpers {
     await getFriends();
   }
 
-
   static Future<bool> authenticate() async {
     final LocalAuthentication auth = LocalAuthentication();
     var b = AppUser.instance;
@@ -109,19 +105,18 @@ class Helpers {
     if (!AppUser.instance.canCheckBio || !AppUser.instance.deviceSupported) {
       return false;
     }
-      try {
-        return await auth.authenticate(
-            localizedReason:
-            'Um in die Einstellungen zu gelangen, ist eine erweiterte Authentifizierung notwendig',
-            biometricOnly: false,
-            useErrorDialogs: true,
-            stickyAuth: true);
-      } on PlatformException catch (e) {
-        print(e);
-        return false;
-      }
+    try {
+      return await auth.authenticate(
+          localizedReason:
+              'Um in die Einstellungen zu gelangen, ist eine erweiterte Authentifizierung notwendig',
+          biometricOnly: false,
+          useErrorDialogs: true,
+          stickyAuth: true);
+    } on PlatformException catch (e) {
+      print(e);
+      return false;
     }
-
+  }
 
   static Future<void> getFriends() async {
     await initFriends();
@@ -145,40 +140,62 @@ class Helpers {
 
   static Future<void> addFriend(String uid, String name) async {
     // await Constants.fbDB.child('friends/${FirebaseAuth.instance.currentUser!.uid}').set([{"Nico1" : "Andrea"}, {"Nico2" : "Klaas"},{"Nico3" : "Klaaas"}]);
-    await Constants.realtimeDatabase.child(
-        'friends/${FirebaseAuth.instance.currentUser!.uid}').update(
-        {uid: name});
+    await Constants.realtimeDatabase
+        .child('friends/${FirebaseAuth.instance.currentUser!.uid}')
+        .update({uid: name});
   }
 
   static Future<void> sendMyListToDB(String uid) async {
-    await Constants.realtimeDatabase.child('endedLists/$uid').update(
-        {Game.instance.listname: Game.instance.toJson()});
+    await Constants.realtimeDatabase
+        .child('endedLists/$uid')
+        .update({Game.instance.listname: Game.instance.toJson()});
     Game.instance.deleteList();
     await getMyArchivedLists();
-
-    }
-
+  }
 
   static Future<void> getMyArchivedLists() async {
-    DataSnapshot dS = await Constants.realtimeDatabase.child(
-        'endedLists/${FirebaseAuth.instance.currentUser!.uid}').once();
+    DataSnapshot dS = await Constants.realtimeDatabase
+        .child('endedLists/${FirebaseAuth.instance.currentUser!.uid}')
+        .once();
     if (dS.value == null) return;
     var map = Map.from(dS.value);
-    AppUser.instance.archivedLists = map.values.map((e) => Game.fromJson(e)).toList();
+    AppUser.instance.archivedLists =
+        map.values.map((e) => Game.fromJson(e)).toList();
     return;
   }
 
   static Future<void> getMyPendingLists() async {
-    DataSnapshot dS = await Constants.realtimeDatabase.child(
-        'gamelists/${FirebaseAuth.instance.currentUser!.uid}').once();
+    DataSnapshot dS = await Constants.realtimeDatabase
+        .child('gamelists/${FirebaseAuth.instance.currentUser!.uid}')
+        .once();
     if (dS.value == null) return;
     var map = Map.from(dS.value);
     AppUser.instance.pendingLists = map.values.map((e) => Game.fromJson(e)).toList();
     return;
   }
 
+  static Future<bool> getTogetherList(BuildContext context, String code) async {
 
 
+    DataSnapshot dS =
+        await Constants.realtimeDatabase.child('workTogether/$code').once();
+    if (dS.value == null) return false;
+    var map = Map.from(dS.value);
+    Game.setInstance(context, map.values.map((e) => Game.fromJson(e)).toList().first);
+    return true;
+
+  }
+
+  static late Timer timer = Timer(const Duration(minutes: 100), () {});
+
+  static Future<void> startTimer(BuildContext context) async {
+    timer.cancel();
+    getTogetherList(context, Game.instance.id);
+    timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      getTogetherList(context, Game.instance.id);
+      print("TIMER");
+    });
+  }
 
   static Future<bool> validatePassword(String password) async {
     var firebaseUser = FirebaseAuth.instance.currentUser;
@@ -186,7 +203,7 @@ class Helpers {
         email: FirebaseAuth.instance.currentUser!.email!, password: password);
     try {
       var authResult =
-      await firebaseUser!.reauthenticateWithCredential(authCredentials);
+          await firebaseUser!.reauthenticateWithCredential(authCredentials);
       return authResult.user != null;
     } catch (e) {
       return false;

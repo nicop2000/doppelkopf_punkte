@@ -29,10 +29,12 @@ class GameList extends StatefulWidget {
 
 class _GameListState extends State<GameList> {
   final _namesKey = GlobalKey<FormState>();
+  final _workTogetherKey = GlobalKey<FormState>();
   Map<Friend, bool> activated = {};
   int _playerCount = 0;
   int _rounds = Game.instance.maxRounds;
   TextEditingController listNameController = TextEditingController();
+  TextEditingController workTogether = TextEditingController();
 
   @override
   void initState() {
@@ -50,7 +52,7 @@ class _GameListState extends State<GameList> {
     player2.dispose();
     player3.dispose();
     player4.dispose();
-
+    workTogether.dispose();
     super.dispose();
   }
 
@@ -169,13 +171,94 @@ class _GameListState extends State<GameList> {
                                         for (Game game
                                             in AppUser.instance.pendingLists) {
                                           if (game.listname == selectedList) {
-                                            Game.instance.restoreList(game);
+                                            Game.instance
+                                                .restoreList(context, game);
                                           }
                                         }
                                         // Game.instance.restoreList(selectedList2);
                                       });
                                     });
-                              })
+                              }),
+                        const Spacer(),
+                        Text(
+                          "oder",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onBackground,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 20,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          "Bei anderer Liste mitwriken",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onBackground,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 20,
+                          ),
+                        ),
+                        Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 20.0),
+                          child: Form(
+                            key: _workTogetherKey,
+                            child: TextFormField(
+                              autocorrect: false,
+                              validator: (code) {
+                                code!.length != 6
+                                    ? "Der Code muss 6 Stellen lang sein"
+                                    : null;
+                              },
+                              onChanged: (_) => setState(() {}),
+                              controller: workTogether,
+                              decoration: InputDecoration(
+                                hintText: "z.B. 12345678",
+                                hintStyle: const TextStyle(
+                                  color: Constants.mainGreyHint,
+                                ),
+                                labelStyle: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                labelText: "Code eingeben",
+                                focusedBorder: const UnderlineInputBorder(
+                                  borderSide:
+                                      BorderSide(color: Constants.mainGrey),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (workTogether.text.isNotEmpty)
+                          CupertinoButton(
+                              child: const Text("Zusammenarbeit starten"),
+                              onPressed: () async {
+                                if (_workTogetherKey.currentState!.validate()) {
+                                  if (!await Helpers.getTogetherList(
+                                      context, workTogether.text)) {
+                                    showCupertinoDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return CupertinoAlertDialog(
+                                            title:
+                                                const Text("Nichts gefunden"),
+                                            content: Text(
+                                                "Es gibt keine Liste mit diesem Code :c"),
+                                            actions: <Widget>[
+                                              CupertinoDialogAction(
+                                                  child: const Text("OK"),
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  })
+                                            ],
+                                          );
+                                        });
+                                  } else {
+                                    Helpers.startTimer(context);
+                                  }
+                                }
+
+                                setState(() {});
+                              }),
                       ],
                     ),
                   )
@@ -197,7 +280,8 @@ class _GameListState extends State<GameList> {
                             child: Padding(
                               padding: const EdgeInsets.only(top: 15.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: getList()
                                     .map((e) => (e as Column).children.first)
                                     .toList(),
@@ -242,7 +326,7 @@ class _GameListState extends State<GameList> {
                                 for (var player in Game.instance.players) {
                                   player.removeLastRound();
                                 }
-                                Game.instance.saveList();
+                                Game.instance.saveList(context);
                                 setState(() {});
                               }),
                       CupertinoButton(
@@ -254,7 +338,7 @@ class _GameListState extends State<GameList> {
                             ),
                           ),
                           onPressed: () {
-                            Game.instance.pauseList();
+                            Game.instance.pauseList(context);
                             setState(() {});
                           }),
                       CupertinoButton(
@@ -293,6 +377,46 @@ class _GameListState extends State<GameList> {
                                 });
                             setState(() {});
                           }),
+                      if (!Game.instance.shared)
+                        CupertinoButton(
+                          onPressed: () {
+                            Game.instance.shared = true;
+                            Game.instance.saveList(context);
+                            showCupertinoDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return CupertinoAlertDialog(
+                                    title: const Text("Code"),
+                                    content: Text(
+                                        "Diesen Code müssen deine Freunde eingeben, um auf ihrem Gerät mitarbeiten zu könnnen: ${Game.instance.id}"),
+                                    actions: <Widget>[
+                                      CupertinoDialogAction(
+                                        child: const Text("OK"),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                });
+                          },
+                          child: Text(
+                            "Liste als gemeinsam freigeben",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        )
+                      else
+                        Center(
+                          child: Text(
+                            "Code für Zusammenarbeit: ${Game.instance.id}",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onBackground,
+                            ),
+                          ),
+                        ),
                       if (Game.instance.currentRound - 1 >=
                               Game.instance.maxRounds &&
                           Game.instance.players[0].uid != "null")
@@ -333,6 +457,7 @@ class _GameListState extends State<GameList> {
                               Helpers.sendMyListToDB(
                                   Game.instance.players[3].uid);
                             }),
+
                     ],
                   );
           } else if (snapshot.hasError) {
@@ -356,10 +481,10 @@ class _GameListState extends State<GameList> {
 
   List<Widget> getListMinusHead() {
     List<Widget> temp = getList();
-    temp.forEach((element) {
+    for (var element in temp) {
       (element as Column).children[0] =
           Opacity(opacity: 0.0, child: element.children[0]);
-    });
+    }
     return temp;
   }
 
@@ -413,13 +538,17 @@ class _GameListState extends State<GameList> {
   }
 
   Column getPlayerColumn(Player p, int indicator) {
-      var b = Game.instance;
+    var b = Game.instance;
     List<Widget> temp = [
       Text(
         p.getName(),
-        style: getListHeadline(context,
-            ((((Game.instance.currentRound - 1) % 4) == indicator) && !(Game.instance.currentRound - 1 >=
-                Game.instance.maxRounds)) ? true : false),
+        style: getListHeadline(
+            context,
+            ((((Game.instance.currentRound - 1) % 4) == indicator) &&
+                    !(Game.instance.currentRound - 1 >=
+                        Game.instance.maxRounds))
+                ? true
+                : false),
       ),
       SizedBox(
         height: spacing,
@@ -603,7 +732,7 @@ class _GameListState extends State<GameList> {
                             }
                           }
                           Runde.instance.init();
-                          Game.instance.saveList();
+                          Game.instance.saveList(context);
                           listNameController.text = "";
                           Navigator.of(context).pop();
                           init = true;

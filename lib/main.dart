@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:doppelkopf_punkte/doko/game_add_entry.dart';
 import 'package:doppelkopf_punkte/doko/game_list.dart';
 import 'package:doppelkopf_punkte/doko/game_settings.dart';
@@ -25,6 +26,7 @@ import 'helper/constants.dart';
 /// Diese App ist der Anwesenheitsmelder für Studenten der FH-Kiel.
 
 Future<void> main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   EnviromentVariables.prefs = await SharedPreferences.getInstance();
@@ -230,141 +232,171 @@ class _AppOverlayState extends State<AppOverlay> {
                       children: [
                         Row(
                           children: [
-                            IconButton(
-                              tooltip: "Einstellungen",
-                              color: Theme.of(context).colorScheme.primary,
-                              onPressed: () async {
-                                if (await Helpers.authenticate()) {
-                                  _showSettings(context);
-                                }
-                              },
-                              icon: Icon(
-                                CupertinoIcons.settings_solid,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                            const Spacer(),
-                            IconButton(
-                              tooltip: "Alle lokalen Daten löschen",
-                              color: Theme.of(context).colorScheme.primary,
-                              onPressed: () async {
-                                if (await Helpers.authenticate()) {
-                                  showCupertinoDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return CupertinoAlertDialog(
-                                          title: const Text("Achtung"),
-                                          content: const Text(
-                                              "Du bist im Begriff, alle lokalen Daten zu löschen. Dies beinhaltet alle nicht abgeschlossenen Listen und du wirst ausgeloggt. Willst du fortfahren? (Kann nicht rückgänig gemacht werden)"),
-                                          actions: <Widget>[
-                                            CupertinoDialogAction(
-                                                child: const Text("Ja"),
-                                                onPressed: () {
-                                                  EnviromentVariables.prefs
-                                                      .clear();
-                                                  DokoPunkte.setAppState(
-                                                      context);
-                                                  FirebaseAuth.instance
-                                                      .signOut();
-                                                  Navigator.of(context).pop();
-                                                }),
-                                            CupertinoDialogAction(
-                                                child: const Text("Nein"),
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                }),
-                                          ],
-                                        );
-                                      });
-                                }
-                              },
-                              icon: Icon(
-                                CupertinoIcons.bin_xmark,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                            const Spacer(),
-                            IconButton(
-                              tooltip: "Alle Daten löschen",
-                              color: Theme.of(context).colorScheme.primary,
-                              onPressed: () async {
-                                if (await Helpers.authenticate()) {
-                                  showCupertinoDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return CupertinoAlertDialog(
-                                          title: const Text("Achtung"),
-                                          content: const Text(
-                                              "Du bist im Begriff, alle deine Daten zu löschen. Das beinhaltet sämtliche lokalen Speicher als auch die Online-Daten und dein Konto. Willst du wirklich fortfahren? (Kann nicht rückgängig gemacht werden)"),
-                                          actions: <Widget>[
-                                            CupertinoDialogAction(
-                                                child: const Text("Ja"),
-                                                onPressed: () async {
-                                                  EnviromentVariables.prefs
-                                                      .clear();
-                                                  await Constants
-                                                      .realtimeDatabase
-                                                      .child(
-                                                          'friends/${FirebaseAuth.instance.currentUser!.uid}')
-                                                      .remove();
-                                                  await Constants
-                                                      .realtimeDatabase
-                                                      .child(
-                                                          'lists/${FirebaseAuth.instance.currentUser!.uid}')
-                                                      .remove();
-                                                  FirebaseAuth
-                                                      .instance.currentUser!
-                                                      .delete();
-                                                  DokoPunkte.setAppState(
-                                                      context);
-                                                  Navigator.of(context).pop();
-                                                }),
-                                            CupertinoDialogAction(
-                                                child: const Text("Nein"),
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                }),
-                                          ],
-                                        );
-                                      });
-                                }
-                              },
-                              icon: Icon(
-                                CupertinoIcons.clear_thick,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                            const Spacer(),
-                            IconButton(
-                              tooltip: "Freunde verwalten",
-                              color: Theme.of(context).colorScheme.primary,
-                              onPressed: () async {
-                                _showFriendManagement(context);
-                              },
-                              icon: Icon(
-                                CupertinoIcons.rectangle_stack_person_crop,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                            const Spacer(),
-                            IconButton(
-                                tooltip: "Logout",
-                                icon: Icon(
-                                  CupertinoIcons.lock_fill,
+                            Column(
+                              children: [
+                                IconButton(
+                                  tooltip: "Einstellungen",
                                   color: Theme.of(context).colorScheme.primary,
+                                  onPressed: () async {
+                                    if (await Helpers.authenticate()) {
+                                      _showSettings(context);
+                                    }
+                                  },
+                                  icon: Icon(
+                                    CupertinoIcons.settings_solid,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
                                 ),
-                                onPressed: () async {
-                                  await FirebaseAuth.instance.signOut();
-                                  await Helpers.initFriends();
-                                }),
+                                Text("Einstellungen", style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 8),),
+                              ],
+                            ),
                             const Spacer(),
-                            IconButton(
-                              tooltip: "Schließen",
-                              onPressed: () => Navigator.of(context).pop(),
-                              icon: Icon(
-                                CupertinoIcons.clear_circled,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
+                            Column(
+                              children: [
+                                IconButton(
+                                  tooltip: "Alle lokalen Daten löschen",
+                                  color: Theme.of(context).colorScheme.primary,
+                                  onPressed: () async {
+                                    if (await Helpers.authenticate()) {
+                                      showCupertinoDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return CupertinoAlertDialog(
+                                              title: const Text("Achtung"),
+                                              content: const Text(
+                                                  "Du bist im Begriff, alle lokalen Daten zu löschen. Dies beinhaltet alle nicht abgeschlossenen Listen und du wirst ausgeloggt. Willst du fortfahren? (Kann nicht rückgänig gemacht werden)"),
+                                              actions: <Widget>[
+                                                CupertinoDialogAction(
+                                                    child: const Text("Ja"),
+                                                    onPressed: () {
+                                                      EnviromentVariables.prefs
+                                                          .clear();
+                                                      DokoPunkte.setAppState(
+                                                          context);
+                                                      FirebaseAuth.instance
+                                                          .signOut();
+                                                      Navigator.of(context).pop();
+                                                    }),
+                                                CupertinoDialogAction(
+                                                    child: const Text("Nein"),
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    }),
+                                              ],
+                                            );
+                                          });
+                                    }
+                                  },
+                                  icon: Icon(
+                                    CupertinoIcons.bin_xmark,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                                Text("Lokales löschen", style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 8),),
+                              ],
+                            ),
+                            const Spacer(),
+                            Column(
+                              children: [
+                                IconButton(
+                                  tooltip: "Alle Daten löschen",
+                                  color: Theme.of(context).colorScheme.primary,
+                                  onPressed: () async {
+                                    if (await Helpers.authenticate()) {
+                                      showCupertinoDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return CupertinoAlertDialog(
+                                              title: const Text("Achtung"),
+                                              content: const Text(
+                                                  "Du bist im Begriff, alle deine Daten zu löschen. Das beinhaltet sämtliche lokalen Speicher als auch die Online-Daten und dein Konto. Willst du wirklich fortfahren? (Kann nicht rückgängig gemacht werden)"),
+                                              actions: <Widget>[
+                                                CupertinoDialogAction(
+                                                    child: const Text("Ja"),
+                                                    onPressed: () async {
+                                                      EnviromentVariables.prefs
+                                                          .clear();
+                                                      await Constants
+                                                          .realtimeDatabase
+                                                          .child(
+                                                              'friends/${FirebaseAuth.instance.currentUser!.uid}')
+                                                          .remove();
+                                                      await Constants
+                                                          .realtimeDatabase
+                                                          .child(
+                                                              'lists/${FirebaseAuth.instance.currentUser!.uid}')
+                                                          .remove();
+                                                      FirebaseAuth
+                                                          .instance.currentUser!
+                                                          .delete();
+                                                      DokoPunkte.setAppState(
+                                                          context);
+                                                      Navigator.of(context).pop();
+                                                    }),
+                                                CupertinoDialogAction(
+                                                    child: const Text("Nein"),
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    }),
+                                              ],
+                                            );
+                                          });
+                                    }
+                                  },
+                                  icon: Icon(
+                                    CupertinoIcons.clear_thick,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                                Text("Alles löschen", style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 8),),
+                              ],
+                            ),
+                            const Spacer(),
+                            Column(
+                              children: [
+                                IconButton(
+                                  tooltip: "Freunde verwalten",
+                                  color: Theme.of(context).colorScheme.primary,
+                                  onPressed: () async {
+                                    _showFriendManagement(context);
+                                  },
+                                  icon: Icon(
+                                    CupertinoIcons.rectangle_stack_person_crop,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                                Text("Freunde verwalten", style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 8),),
+                              ],
+                            ),
+                            const Spacer(),
+                            Column(
+                              children: [
+                                IconButton(
+                                    tooltip: "Logout",
+                                    icon: Icon(
+                                      CupertinoIcons.lock_fill,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    onPressed: () async {
+                                      await FirebaseAuth.instance.signOut();
+                                      await Helpers.initFriends();
+                                    }),
+                              Text("Ausloggen", style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 8),),
+                              ],
+                            ),
+                            const Spacer(),
+                            Column(
+                              children: [
+                                IconButton(
+                                  tooltip: "Schließen",
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  icon: Icon(
+                                    CupertinoIcons.clear_circled,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              Text("Schließen", style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 8),),
+                              ],
                             ),
                           ],
                         ),

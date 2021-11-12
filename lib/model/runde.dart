@@ -14,6 +14,8 @@ class Runde {
   List<String> summary = [];
 
   Runde init() {
+    wonPoints.clear();
+    winnerPoints.clear();
     for (Player p in Game.instance.players) {
       wonPoints.addAll({p: false});
     }
