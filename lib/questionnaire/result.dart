@@ -1,5 +1,6 @@
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
+import 'package:doppelkopf_punkte/main.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:doppelkopf_punkte/model/player.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
@@ -81,45 +82,45 @@ class _ResultState extends State<Result> {
         Runde.instance.winnerPoints[Sonderpunkte.re]! &&
         !solo) {
       result.add("Re +2");
-      pointsForWinners += 2;
+      pointsForWinners += Game.instance.rePoints;
     }
     if (Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
         Runde.instance.winnerPoints[Sonderpunkte.kontra]! &&
         !solo) {
       result.add("Kontra +2");
-      pointsForWinners += 2;
+      pointsForWinners += Game.instance.rePoints;
     }
     if (!Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
         Runde.instance.winnerPoints[Sonderpunkte.kontra]! &&
         !solo) {
       result.add("Kontra +2");
-      pointsForWinners += 2;
+      pointsForWinners += Game.instance.rePoints;
     }
     if (!Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
         Runde.instance.winnerPoints[Sonderpunkte.re]! &&
         !solo) {
       result.add("Re +2");
-      pointsForWinners += 2;
+      pointsForWinners += Game.instance.rePoints;
     }
 
     if (winners == 1 && Runde.instance.winnerPoints[Sonderpunkte.re]!) {
-      pointsForWinners += 2;
+      pointsForWinners += Game.instance.rePoints;
       result.add("Solo +1");
     }
 
     if (winners == 1 && Runde.instance.winnerPoints[Sonderpunkte.kontra]!) {
-      pointsForWinners += 2;
+      pointsForWinners += Game.instance.rePoints;
       result.add("Kontra +2");
     }
 
     if (winners == 3 && Runde.instance.winnerPoints[Sonderpunkte.re]!) {
-      pointsForWinners += 2;
+      pointsForWinners += Game.instance.rePoints;
       result.add("Re -2");
     }
 
 
     if (winners == 3 && Runde.instance.winnerPoints[Sonderpunkte.kontra]!) {
-      pointsForWinners += 2;
+      pointsForWinners += Game.instance.rePoints;
       result.add("Kontra +2");
     }
 
@@ -180,6 +181,9 @@ class _ResultState extends State<Result> {
             await Game.instance.saveList(context);
             final BottomNavigationBar navigationBar = EnviromentVariables.keyBottomNavBar.currentWidget as BottomNavigationBar;
             navigationBar.onTap!(0);
+            Helpers.startTimer(context);
+            print("RESULT START TIMER");
+
           },
           child: const Text("Hinzufügen"),
         ),

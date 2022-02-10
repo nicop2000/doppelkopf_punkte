@@ -15,6 +15,10 @@ class Constants {
     decoration: TextDecoration.none,
   );
 
+  static int duration = 10;
+  static Duration refreshList = Duration(seconds: duration);
+  static Duration getData = Duration(seconds: duration - 2);
+
   static const errorTextStyle = TextStyle(
     color: Colors.red,
     fontSize: 15.0,

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:doppelkopf_punkte/doko/game_add_entry.dart';
 import 'package:doppelkopf_punkte/doko/game_list.dart';
 import 'package:doppelkopf_punkte/doko/game_settings.dart';
@@ -19,6 +18,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,6 +30,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   EnviromentVariables.prefs = await SharedPreferences.getInstance();
+  if (Helpers.timer.isActive) Helpers.timer.cancel();
   if (FirebaseAuth.instance.currentUser != null) {
     await Helpers.userLoggedIn();
   }
@@ -37,7 +38,15 @@ Future<void> main() async {
   AppUser.instance.deviceSupported = await AppUser.instance.localAuth.isDeviceSupported();
 
 
-  runApp(const DokoPunkte());
+  runApp(
+      MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => Opponent("", "")),
+            ChangeNotifierProvider(create: (_) => UserModel("", [], [], [])),
+            ChangeNotifierProvider(create: (_) => App()),
+          ],
+      child: const DokoPunkte()
+  );
 }
 
 class DokoPunkte extends StatefulWidget {
@@ -54,7 +63,10 @@ class DokoPunkte extends StatefulWidget {
 class _DokoPunkteState extends State<DokoPunkte> {
   void restartApp() {
     setState(() {});
+
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +94,7 @@ class _DokoPunkteState extends State<DokoPunkte> {
         "${routers.login}": (context) => const Login(),
         "${routers.register}": (context) => const Register(),
       },
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/main.dart';
+import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -34,6 +35,8 @@ class _GameSettingsState extends State<GameSettings> {
                   ),
                 ),
               ),
+
+
               getColorTheme(context, background: const Color(0xFFFFFFFF), onBackground: const Color(0xFF000000), primary: const Color(0xFF10305A), active: const Color(0xFF10FCAE)),
 
               getColorTheme(context, background: const Color(0xFFDAE5D6), onBackground: const Color(0xFFF58972), primary: const Color(0xFFCB96F3), active: const Color(0xFFFFFB00)),
@@ -46,6 +49,8 @@ class _GameSettingsState extends State<GameSettings> {
       ),
     );
   }
+
+
 
   Widget getColorTheme(BuildContext context, {@required Color? background,
     @required Color? onBackground,

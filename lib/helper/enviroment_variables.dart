@@ -12,5 +12,7 @@ class EnviromentVariables {
 
   static bool review = false;
 
+  static bool othersList = false;
+
 
 }

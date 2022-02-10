@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
@@ -35,6 +37,26 @@ class _GameAddEntryState extends State<GameAddEntry> {
     const Herz(),
     const Result(),
   ];
+
+  @override
+  void initState() {
+    print("INIT ADD");
+    if (Helpers.timer.isActive) {
+      Helpers.timer.cancel();
+    }
+    super.initState();
+  }
+
+  @override
+  void deactivate() {
+    print("DEACTIVATE");
+    if (!Helpers.timer.isActive) {
+      print("START IN GAME ADD ENTRY");
+      Helpers.startTimer(context);
+    }
+    super.deactivate();
+  }
+
 
   @override
   Widget build(BuildContext context) {

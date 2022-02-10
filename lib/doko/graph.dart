@@ -1,5 +1,4 @@
 import 'package:doppelkopf_punkte/model/game.dart';
-import 'package:doppelkopf_punkte/model/player.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -39,7 +38,8 @@ class Graph extends StatelessWidget {
     getBarData() {
       List<LineChartBarData> temp = [];
       for (int i = 0; i < game.players.length; i++) {
-        temp.add(LineChartBarData(
+        temp.add(
+            LineChartBarData(
           spots: getSpots(i),
           colors: [colors[i]],
           barWidth: 3,
@@ -63,6 +63,7 @@ class Graph extends StatelessWidget {
                       color: Theme.of(context).colorScheme.onBackground),
                 ),
               ),
+
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.6,
                 width: MediaQuery.of(context).size.width * 0.85,
@@ -151,3 +152,46 @@ class Graph extends StatelessWidget {
     return temp;
   }
 }
+
+/*
+LineChart(
+  LineChartData(
+  minX: 0,
+  maxX: 100,
+  minY: 0,
+  maxY: 100,
+  backgroundColor: Colors.white,
+  gridData: FlGridData(show: false),
+  borderData: FlBorderData(
+  show: true,
+  border: Border.all(
+  color: Theme.of(context).colorScheme.onBackground,
+  width: 1),
+  ),
+  lineBarsData: getBarData(),
+) ,
+),
+
+getSpots(double x, double y) {
+  List<FlSpot> temp = [];
+  for (int i = 0; i < game.currentRound; i++) {
+    temp.add(
+        FlSpot(i.toDouble(), game.players[j].getAllPoints()[i].toDouble()));
+  }
+  return temp;
+}
+
+getBarData() {
+  List<LineChartBarData> temp = [];
+  for (int i = 0; i < 10; i++) {
+    temp.add(
+        LineChartBarData(
+          spots: getSpots(i, i),
+          colors: [Colors.red, Colors.yellow, /*....*/],
+          barWidth: 3,
+          dotData: FlDotData(show: false),
+        ));
+  }
+  return temp;
+}
+*/

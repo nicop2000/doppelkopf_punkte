@@ -100,7 +100,6 @@ class Helpers {
 
   static Future<bool> authenticate() async {
     final LocalAuthentication auth = LocalAuthentication();
-    var b = AppUser.instance;
 
     if (!AppUser.instance.canCheckBio || !AppUser.instance.deviceSupported) {
       return false;
@@ -149,7 +148,7 @@ class Helpers {
     await Constants.realtimeDatabase
         .child('endedLists/$uid')
         .update({Game.instance.listname: Game.instance.toJson()});
-    Game.instance.deleteList();
+
     await getMyArchivedLists();
   }
 
@@ -182,17 +181,17 @@ class Helpers {
     if (dS.value == null) return false;
     var map = Map.from(dS.value);
     Game.setInstance(context, map.values.map((e) => Game.fromJson(e)).toList().first);
+
     return true;
 
   }
 
-  static late Timer timer = Timer(const Duration(minutes: 100), () {});
+  static Timer timer = Timer(const Duration(days: 2), () {});
 
   static Future<void> startTimer(BuildContext context) async {
-    timer.cancel();
     getTogetherList(context, Game.instance.id);
-    timer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      getTogetherList(context, Game.instance.id);
+    timer = Timer.periodic(Constants.getData, (timer) async {
+      await getTogetherList(context, Game.instance.id);
       print("TIMER");
     });
   }

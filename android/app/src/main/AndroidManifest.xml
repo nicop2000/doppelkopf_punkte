@@ -7,7 +7,7 @@
 
 
    <application
-        android:label="doppelkopf_punkte"
+        android:label="DoKo Punkte"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"

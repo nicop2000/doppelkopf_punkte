@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
+import 'package:doppelkopf_punkte/main.dart';
 import 'package:doppelkopf_punkte/model/friend.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:doppelkopf_punkte/model/player.dart';
@@ -36,17 +39,27 @@ class _GameListState extends State<GameList> {
   TextEditingController listNameController = TextEditingController();
   TextEditingController workTogether = TextEditingController();
 
+  var timer = Timer(Duration(days: 2), () {});
+
   @override
   void initState() {
     extra1 = false;
     extra2 = false;
     extra3 = false;
     init = true;
+    if (Game.instance.shared)
+      timer = Timer.periodic(Constants.refreshList, (timer) {
+        print("SET");
+        setState(() {});
+      });
+    setState(() {});
+    super.initState();
     super.initState();
   }
 
   @override
   void dispose() {
+    if (timer.isActive) timer.cancel();
     listNameController.dispose();
     player1.dispose();
     player2.dispose();
@@ -56,6 +69,8 @@ class _GameListState extends State<GameList> {
     super.dispose();
   }
 
+  getReBool() => Game.instance.rePoints == 2;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -64,162 +79,57 @@ class _GameListState extends State<GameList> {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (BuildContext bc, AsyncSnapshot<User?> snapshot) {
           if (snapshot.hasData) {
-            return Game.instance.players.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20.0),
-                          child: Text(
-                            "Rundenanzahl auswählen",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onBackground,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                        NumberPicker(
-                          minValue: 3,
-                          maxValue: 90,
-                          value: _rounds,
-                          onChanged: (newMax) =>
-                              setState(() => _rounds = newMax),
-                          textStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.onBackground,
-                              fontSize: 17),
-                          selectedTextStyle: TextStyle(
-                              color: PersistentData.getActive(),
-                              fontSize: 30,
-                              fontWeight: FontWeight.w600),
-                        ),
-                        Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 20.0),
-                          child: TextField(
-                            autocorrect: false,
-                            controller: listNameController,
-                            decoration: InputDecoration(
-                              hintText: "z.B. Liste Nr. 1",
-                              hintStyle: const TextStyle(
-                                color: Constants.mainGreyHint,
-                              ),
-                              labelStyle: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              labelText: "Listenname",
-                              focusedBorder: const UnderlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: Constants.mainGrey),
-                              ),
-                            ),
-                          ),
-                        ),
-                        CupertinoButton(
-                          onPressed: () {
-                            Game.instance.setMaxRounds(_rounds);
-
-                            Game.instance.listname = listNameController.text;
-                            Game.instance.listname +=
-                                " - ${DateTime.now().toIso8601String().substring(0, 16).replaceAll("T", " ")}";
-                            Game.instance.listname.replaceAll(".", "_");
-
-                            _showPlayerInput(context);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+            if (Game.instance.players.isEmpty) {
+              return Center(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20.0),
                             child: Text(
-                              "Neue Liste beginnen",
+                              "Rundenanzahl auswählen",
                               style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary),
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
+                              ),
                             ),
                           ),
-                        ),
-                        if (AppUser.instance.pendingLists.isNotEmpty)
-                          CupertinoButton(
-                              child: const Text("Alte Liste wiederherstellen"),
-                              onPressed: () async {
-                                List<String> items = AppUser
-                                    .instance.pendingLists
-                                    .map((e) => e.listname)
-                                    .toList();
-                                String selectedList = items[0];
-
-                                showMaterialScrollPicker(
-                                    context: context,
-                                    items: items,
-                                    backgroundColor: Theme.of(context)
-                                        .colorScheme
-                                        .background,
-                                    confirmText: "OK",
-                                    cancelText: "Abbrechen",
-                                    buttonTextColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    title: "Wähle eine Liste aus",
-                                    headerColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    headerTextColor: Theme.of(context)
-                                        .colorScheme
-                                        .background,
-                                    showDivider: false,
-                                    selectedItem: selectedList,
-                                    onChanged: (value) => setState(
-                                        () => selectedList = value as String),
-                                    onConfirmed: () {
-                                      setState(() {
-                                        for (Game game
-                                            in AppUser.instance.pendingLists) {
-                                          if (game.listname == selectedList) {
-                                            Game.instance
-                                                .restoreList(context, game);
-                                          }
-                                        }
-                                        // Game.instance.restoreList(selectedList2);
-                                      });
-                                    });
-                              }),
-                        const Spacer(),
-                        Text(
-                          "oder",
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onBackground,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 20,
+                          NumberPicker(
+                            minValue: 3,
+                            maxValue: 90,
+                            value: _rounds,
+                            onChanged: (newMax) =>
+                                setState(() => _rounds = newMax),
+                            textStyle: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                                fontSize: 17),
+                            selectedTextStyle: TextStyle(
+                                color: PersistentData.getActive(),
+                                fontSize: 30,
+                                fontWeight: FontWeight.w600),
                           ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          "Bei anderer Liste mitwriken",
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onBackground,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 20,
-                          ),
-                        ),
-                        Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 20.0),
-                          child: Form(
-                            key: _workTogetherKey,
-                            child: TextFormField(
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                                30.0, 20.0, 30.0, 20.0),
+                            child: TextField(
                               autocorrect: false,
-                              validator: (code) {
-                                code!.length != 6
-                                    ? "Der Code muss 6 Stellen lang sein"
-                                    : null;
-                              },
-                              onChanged: (_) => setState(() {}),
-                              controller: workTogether,
+                              controller: listNameController,
                               decoration: InputDecoration(
-                                hintText: "z.B. 12345678",
+                                hintText: "z.B. Liste Nr. 1",
                                 hintStyle: const TextStyle(
                                   color: Constants.mainGreyHint,
                                 ),
                                 labelStyle: TextStyle(
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                labelText: "Code eingeben",
+                                labelText: "Listenname",
                                 focusedBorder: const UnderlineInputBorder(
                                   borderSide:
                                       BorderSide(color: Constants.mainGrey),
@@ -227,239 +137,452 @@ class _GameListState extends State<GameList> {
                               ),
                             ),
                           ),
-                        ),
-                        if (workTogether.text.isNotEmpty)
+                          Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 30),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                Text("Re/Kontra geben..."),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text("1 Punkt"),
+                                    Switch(
+                                        value: getReBool(),
+                                        onChanged: (newValue) {
+                                          newValue
+                                              ? Game.instance.rePoints = 2
+                                              : Game.instance.rePoints = 1;
+                                          setState(() {});
+                                        }),
+                                    const Text("2 Punkte")
+                                  ],
+                                ),
+                              ])),
                           CupertinoButton(
-                              child: const Text("Zusammenarbeit starten"),
-                              onPressed: () async {
-                                if (_workTogetherKey.currentState!.validate()) {
-                                  if (!await Helpers.getTogetherList(
-                                      context, workTogether.text)) {
-                                    showCupertinoDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return CupertinoAlertDialog(
-                                            title:
-                                                const Text("Nichts gefunden"),
-                                            content: Text(
-                                                "Es gibt keine Liste mit diesem Code :c"),
-                                            actions: <Widget>[
-                                              CupertinoDialogAction(
-                                                  child: const Text("OK"),
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  })
-                                            ],
-                                          );
-                                        });
-                                  } else {
-                                    Helpers.startTimer(context);
-                                  }
-                                }
+                            onPressed: () {
+                              Game.instance.setMaxRounds(_rounds);
 
-                                setState(() {});
-                              }),
-                      ],
-                    ),
-                  )
-                : ListView(
-                    children: [
-                      if (Game.instance.currentRound - 1 >=
-                          Game.instance.maxRounds)
-                        Padding(
-                          padding: EdgeInsets.only(top: spacing),
-                          child: Center(
-                              child: Helpers.getQuestionnaireHeadline(
-                                  context, "Die Liste ist beendet")),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: StickyHeader(
-                          header: Container(
-                            color: Theme.of(context).colorScheme.background,
+                              Game.instance.listname = listNameController.text;
+                              Game.instance.listname +=
+                                  " - ${DateTime.now().toIso8601String().substring(0, 16).replaceAll("T", " ")}";
+                              Game.instance.listname.replaceAll(".", "_");
+
+                              _showPlayerInput(context);
+                            },
                             child: Padding(
-                              padding: const EdgeInsets.only(top: 15.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: getList()
-                                    .map((e) => (e as Column).children.first)
-                                    .toList(),
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                "Neue Liste beginnen",
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
                               ),
                             ),
                           ),
-                          content: Row(
+                          if (AppUser.instance.pendingLists.isNotEmpty)
+                            CupertinoButton(
+                                child:
+                                    const Text("Alte Liste wiederherstellen"),
+                                onPressed: () async {
+                                  List<String> items = AppUser
+                                      .instance.pendingLists
+                                      .map((e) => e.listname)
+                                      .toList();
+                                  String selectedList = items[0];
+
+                                  showMaterialScrollPicker(
+                                      context: context,
+                                      items: items,
+                                      backgroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .background,
+                                      confirmText: "OK",
+                                      cancelText: "Abbrechen",
+                                      buttonTextColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      title: "Wähle eine Liste aus",
+                                      headerColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      headerTextColor: Theme.of(context)
+                                          .colorScheme
+                                          .background,
+                                      showDivider: false,
+                                      selectedItem: selectedList,
+                                      onChanged: (value) => setState(
+                                          () => selectedList = value as String),
+                                      onConfirmed: () async {
+                                        for (Game game
+                                            in AppUser.instance.pendingLists) {
+                                          if (game.listname == selectedList) {
+                                            await Game.instance
+                                                .restoreList(context, game);
+                                          }
+                                        }
+                                        setState(() {});
+                                        print("GAME_LIST RESTORE");
+                                        timer = Timer.periodic(
+                                            Constants.refreshList, (timer) {
+                                          print("SET");
+                                          setState(() {});
+                                        });
+                                      });
+                                }),
+
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10, bottom: 20),
+                            child: Text(
+                              "oder",
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onBackground,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+
+                          Text(
+                            "Bei anderer Liste mitwriken",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onBackground,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 20,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                                30.0, 20.0, 30.0, 20.0),
+                            child: Form(
+                              key: _workTogetherKey,
+                              child: TextFormField(
+                                autocorrect: false,
+                                validator: (code) {
+                                  code!.length != 6
+                                      ? "Der Code muss 6 Stellen lang sein"
+                                      : null;
+                                },
+                                onChanged: (_) => setState(() {}),
+                                controller: workTogether,
+                                decoration: InputDecoration(
+                                  hintText: "z.B. 12345678",
+                                  hintStyle: const TextStyle(
+                                    color: Constants.mainGreyHint,
+                                  ),
+                                  labelStyle: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                  labelText: "Code eingeben",
+                                  focusedBorder: const UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Constants.mainGrey),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (workTogether.text.isNotEmpty)
+                            CupertinoButton(
+                                child: const Text("Zusammenarbeit starten"),
+                                onPressed: () async {
+                                  if (_workTogetherKey.currentState!
+                                      .validate()) {
+                                    if (!await Helpers.getTogetherList(
+                                        context, workTogether.text)) {
+                                      showCupertinoDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return CupertinoAlertDialog(
+                                              title:
+                                                  const Text("Nichts gefunden"),
+                                              content: const Text(
+                                                  "Es gibt keine Liste mit diesem Code :c"),
+                                              actions: <Widget>[
+                                                CupertinoDialogAction(
+                                                    child: const Text("OK"),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    })
+                                              ],
+                                            );
+                                          });
+                                    } else {
+                                      EnviromentVariables.othersList = true;
+                                      workTogether.text = "";
+                                      Helpers.startTimer(context);
+                                      print("GAME_LIST ELSE");
+                                      timer = Timer.periodic(
+                                          Constants.refreshList, (timer) {
+                                        print("SET");
+                                        setState(() {});
+                                      });
+                                    }
+                                  }
+
+                                  setState(() {});
+                                }),
+                        ],
+
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return ListView(
+                children: [
+                  if (Game.instance.currentRound - 1 >= Game.instance.maxRounds)
+                    Padding(
+                      padding: EdgeInsets.only(top: spacing),
+                      child: Center(
+                          child: Helpers.getQuestionnaireHeadline(
+                              context, "Die Liste ist beendet")),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: StickyHeader(
+                      header: Container(
+                        color: Theme.of(context).colorScheme.background,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 15.0),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: getListMinusHead(),
+                            children: getList()
+                                .map((e) => (e as Column).children.first)
+                                .toList(),
                           ),
                         ),
                       ),
-                      if (!(Game.instance.currentRound - 1 >=
-                          Game.instance.maxRounds))
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 15.0),
-                          child: Center(
-                            child: Text(
-                              "Noch ${Game.instance.maxRounds + 1 - Game.instance.currentRound} Runden",
-                              style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.onBackground,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
+                      content: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: getListMinusHead(),
+                      ),
+                    ),
+                  ),
+                  if (!(Game.instance.currentRound - 1 >=
+                      Game.instance.maxRounds))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 15.0),
+                      child: Center(
+                        child: Text(
+                          "Noch ${Game.instance.maxRounds + 1 - Game.instance.currentRound} Runden",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onBackground,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
-                      if (Game.instance.currentRound > 1)
-                        if (!EnviromentVariables.review)
-                          CupertinoButton(
-                              // color: Theme.of(context).colorScheme.onPrimary,
-                              child: Text(
-                                "Letzten Eintrag löschen",
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              onPressed: () {
-                                var b = Game.instance;
-                                Game.instance.currentRound--;
-                                for (var player in Game.instance.players) {
-                                  player.removeLastRound();
-                                }
-                                Game.instance.saveList(context);
-                                setState(() {});
-                              }),
+                      ),
+                    ),
+                  if (Game.instance.currentRound > 1)
+                    if (!EnviromentVariables.review)
                       CupertinoButton(
                           // color: Theme.of(context).colorScheme.onPrimary,
                           child: Text(
-                            "Liste pausieren",
+                            "Letzten Eintrag löschen",
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                           onPressed: () {
-                            Game.instance.pauseList(context);
-                            setState(() {});
-                          }),
-                      CupertinoButton(
-                          // color: Theme.of(context).colorScheme.onPrimary,
-                          child: Text(
-                            "Liste löschen",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          onPressed: () {
-                            showCupertinoDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return CupertinoAlertDialog(
-                                    title: const Text("Warnung"),
-                                    content: const Text(
-                                        "Soll die Liste wirklich gelöscht werden?"),
-                                    actions: <Widget>[
-                                      CupertinoDialogAction(
-                                        isDefaultAction: true,
-                                        child: const Text("Nein"),
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(),
-                                      ),
-                                      CupertinoDialogAction(
-                                        child: const Text("Ja"),
-                                        onPressed: () {
-                                          Game.instance.deleteList();
-                                          Navigator.of(context).pop();
-                                          setState(() {});
-                                        },
-                                      )
-                                    ],
-                                  );
-                                });
-                            setState(() {});
-                          }),
-                      if (!Game.instance.shared)
-                        CupertinoButton(
-                          onPressed: () {
-                            Game.instance.shared = true;
+                            var b = Game.instance;
+                            Game.instance.currentRound--;
+                            for (var player in Game.instance.players) {
+                              player.removeLastRound();
+                            }
                             Game.instance.saveList(context);
-                            showCupertinoDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return CupertinoAlertDialog(
-                                    title: const Text("Code"),
-                                    content: Text(
-                                        "Diesen Code müssen deine Freunde eingeben, um auf ihrem Gerät mitarbeiten zu könnnen: ${Game.instance.id}"),
-                                    actions: <Widget>[
-                                      CupertinoDialogAction(
-                                        child: const Text("OK"),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                          setState(() {});
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                });
-                          },
-                          child: Text(
-                            "Liste als gemeinsam freigeben",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        )
-                      else
-                        Center(
-                          child: Text(
-                            "Code für Zusammenarbeit: ${Game.instance.id}",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onBackground,
-                            ),
+                            setState(() {});
+                          }),
+                  if (EnviromentVariables.othersList)
+                    CupertinoButton(
+                        child: Text(
+                          "Zusammenarbeit auf diesem Gerät beenden",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
-                      if (Game.instance.currentRound - 1 >=
-                              Game.instance.maxRounds &&
-                          Game.instance.players[0].uid != "null")
-                        CupertinoButton(
-                            child: Text(
-                                "Punkte für ${Game.instance.players[0].getName()} in Datenbank übertragen & speichern"),
-                            onPressed: () {
-                              Helpers.sendMyListToDB(
-                                  Game.instance.players[0].uid);
-                            }),
-                      if (Game.instance.currentRound - 1 >=
-                              Game.instance.maxRounds &&
-                          Game.instance.players[1].uid != "null")
-                        CupertinoButton(
-                            child: Text(
-                                "Punkte für ${Game.instance.players[1].getName()} in Datenbank übertragen & speichern"),
-                            onPressed: () {
-                              Helpers.sendMyListToDB(
-                                  Game.instance.players[1].uid);
-                            }),
-                      if (Game.instance.currentRound - 1 >=
-                              Game.instance.maxRounds &&
-                          Game.instance.players[2].uid != "null")
-                        CupertinoButton(
-                            child: Text(
-                                "Punkte für ${Game.instance.players[2].getName()} in Datenbank übertragen & speichern"),
-                            onPressed: () {
-                              Helpers.sendMyListToDB(
-                                  Game.instance.players[2].uid);
-                            }),
-                      if (Game.instance.currentRound - 1 >=
-                              Game.instance.maxRounds &&
-                          Game.instance.players[3].uid != "null")
-                        CupertinoButton(
-                            child: Text(
-                                "Punkte für ${Game.instance.players[3].getName()} in Datenbank übertragen & speichern"),
-                            onPressed: () {
-                              Helpers.sendMyListToDB(
-                                  Game.instance.players[3].uid);
-                            }),
+                        onPressed: () {
+                          Helpers.timer.cancel();
+                          timer.cancel();
+                          Game.instance.reset();
+                          setState(() {});
+                        }),
+                  if (!EnviromentVariables.othersList)
+                    CupertinoButton(
+                        // color: Theme.of(context).colorScheme.onPrimary,
+                        child: Text(
+                          "Liste pausieren",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        onPressed: () async {
+                          await Game.instance.pauseList(context);
+                          timer.cancel();
+                          setState(() {});
+                        }),
+                  if (!EnviromentVariables.othersList)
+                    CupertinoButton(
+                        // color: Theme.of(context).colorScheme.onPrimary,
+                        child: Text(
+                          "Liste löschen",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        onPressed: () {
+                          showCupertinoDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return CupertinoAlertDialog(
+                                  title: const Text("Warnung"),
+                                  content: const Text(
+                                      "Soll die Liste wirklich gelöscht werden?"),
+                                  actions: <Widget>[
+                                    CupertinoDialogAction(
+                                      isDefaultAction: true,
+                                      child: const Text("Nein"),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                    ),
+                                    CupertinoDialogAction(
+                                      child: const Text("Ja"),
+                                      onPressed: () async {
+                                        await Game.instance.deleteList();
+                                        timer.cancel();
+                                        Helpers.timer.cancel();
+                                        Navigator.of(context).pop();
+                                        setState(() {});
+                                      },
+                                    )
+                                  ],
+                                );
+                              });
+                          setState(() {});
+                        }),
+                  if (!Game.instance.shared)
+                    CupertinoButton(
+                      onPressed: () {
+                        Game.instance.shared = true;
+                        Helpers.startTimer(context);
+                        timer = Timer.periodic(Constants.refreshList, (timer) {
+                          print("SET");
+                          setState(() {});
+                        });
+                        Game.instance.saveList(context);
+                        showCupertinoDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return CupertinoAlertDialog(
+                                title: const Text("Code"),
+                                content: Text(
+                                    "Diesen Code müssen deine Freunde eingeben, um auf ihrem Gerät mitarbeiten zu könnnen: ${Game.instance.id}"),
+                                actions: <Widget>[
+                                  CupertinoDialogAction(
+                                    child: const Text("OK"),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      setState(() {});
+                                    },
+                                  ),
+                                ],
+                              );
+                            });
+                      },
+                      child: Text(
+                        "Liste als gemeinsam freigeben",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    )
+                  else
+                    Center(
+                      child: Text(
+                        "Code für Zusammenarbeit: ${Game.instance.id}",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
+                      ),
+                    ),
+                  if (Game.instance.currentRound - 1 >=
+                          Game.instance.maxRounds &&
+                      Game.instance.players[0].uid != "null")
+                    CupertinoButton(
+                        child: Text(
+                            "Punkte für ${Game.instance.players[0].getName()} in Datenbank übertragen & speichern"),
+                        onPressed: () {
+                          Helpers.sendMyListToDB(Game.instance.players[0].uid);
+                        }),
+                  if (Game.instance.currentRound - 1 >=
+                          Game.instance.maxRounds &&
+                      Game.instance.players[1].uid != "null")
+                    CupertinoButton(
+                        child: Text(
+                            "Punkte für ${Game.instance.players[1].getName()} in Datenbank übertragen & speichern"),
+                        onPressed: () {
+                          Helpers.sendMyListToDB(Game.instance.players[1].uid);
+                        }),
+                  if (Game.instance.currentRound - 1 >=
+                          Game.instance.maxRounds &&
+                      Game.instance.players[2].uid != "null")
+                    CupertinoButton(
+                        child: Text(
+                            "Punkte für ${Game.instance.players[2].getName()} in Datenbank übertragen & speichern"),
+                        onPressed: () {
+                          Helpers.sendMyListToDB(Game.instance.players[2].uid);
+                        }),
+                  if (Game.instance.currentRound - 1 >=
+                          Game.instance.maxRounds &&
+                      Game.instance.players[3].uid != "null")
+                    CupertinoButton(
+                        child: Text(
+                            "Punkte für ${Game.instance.players[3].getName()} in Datenbank übertragen & speichern"),
+                        onPressed: () {
+                          Helpers.sendMyListToDB(Game.instance.players[3].uid);
+                        }),
 
-                    ],
-                  );
+                  if (Game.instance.currentRound - 1 >=
+                      Game.instance.maxRounds)
+                    CupertinoButton(
+                        child: const Text(
+                            "Liste endgültig beenden (kann danach nicht mehr bearbeitet werden)."),
+                        onPressed: () {
+                          showCupertinoDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return CupertinoAlertDialog(
+                                  title: const Text("Warnung"),
+                                  content: const Text(
+                                      "Soll die Liste wirklich beendet werden? Nicht in der Datenbank gespeicherte Listen gehen verloren!"),
+                                  actions: <Widget>[
+                                    CupertinoDialogAction(
+                                      isDefaultAction: true,
+                                      child: const Text("Nein"),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                    ),
+                                    CupertinoDialogAction(
+                                      child: const Text("Ja"),
+                                      onPressed: () async {
+                                        await Game.instance.deleteList();
+                                        timer.cancel();
+                                        Helpers.timer.cancel();
+                                        Navigator.of(context).pop();
+                                        setState(() {});
+                                      },
+                                    )
+                                  ],
+                                );
+                              });
+                          setState(() {});
+
+                        }),
+                ],
+              );
+            }
           } else if (snapshot.hasError) {
             return const Center(
               child: Text("Es ist ein Fehler aufgetreten"),

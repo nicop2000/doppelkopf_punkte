@@ -93,7 +93,7 @@ class _SavedListsState extends State<SavedLists> {
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: Text(
-                game.date.replaceAll("T", " "),
+                game.listname,
                 style: TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.w700,
@@ -258,7 +258,7 @@ class _SavedListsState extends State<SavedLists> {
                 onPressed: () async {
                   await Constants.realtimeDatabase
                       .child(
-                          'lists/${FirebaseAuth.instance.currentUser!.uid}/${game.date}')
+                          'endedLists/${FirebaseAuth.instance.currentUser!.uid}/${game.listname}')
                       .remove();
                   await Helpers.getMyArchivedLists();
                   setState(() {});
@@ -379,7 +379,7 @@ class _SavedListsState extends State<SavedLists> {
         ),
         isScrollControlled: true,
         constraints: BoxConstraints.tight(
-            Size.fromHeight(MediaQuery.of(context).size.height * 0.85)),
+            Size.fromHeight(MediaQuery.of(context).size.height * 0.95)),
         context: context,
         builder: (BuildContext bc) {
           return DraggableScrollableSheet(
