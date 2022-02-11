@@ -1,8 +1,9 @@
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 
 class Herz extends StatefulWidget {
   const Herz({Key? key}) : super(key: key);
@@ -12,14 +13,9 @@ class Herz extends StatefulWidget {
   _HerzState createState() => _HerzState();
 }
 
-bool t() {
-  return _HerzState().hdWinner;
-}
 
 class _HerzState extends State<Herz> {
 
-  bool hdWinner = Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufWinner]!;
-  bool hdLoser = Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufLoser]!;
 
   @override
   Widget build(BuildContext context) {
@@ -39,15 +35,13 @@ class _HerzState extends State<Herz> {
               fontWeight: FontWeight.w500,
               fontSize: 15,
             ),),
-            Switch(value: hdWinner, activeColor: PersistentData.getActive(),onChanged: (value) {
-              setState(() {
+            Switch(value: context.watch<Runde>().winnerPoints[Sonderpunkte.herzdurchlaufWinner]!, activeColor: context.watch<PersistentData>().getActive(),onChanged: (value) {
 
-              hdWinner = value;
-              });
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.herzdurchlaufWinner, value);
               if(value) {
-                Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufWinner] = true;
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.herzdurchlaufWinner, true);
               } else {
-                Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufWinner] = false;
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.herzdurchlaufWinner, false);
               }
             }),
             Text("Ja", style: TextStyle(
@@ -63,15 +57,13 @@ class _HerzState extends State<Herz> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("Nein", style: Helpers.getStyleForSwitch(context),),
-            Switch(value: hdLoser, activeColor: PersistentData.getActive(),onChanged: (value) {
-              setState(() {
+            Switch(value: context.watch<Runde>().winnerPoints[Sonderpunkte.herzdurchlaufLoser]!, activeColor: context.watch<PersistentData>().getActive(),onChanged: (value) {
 
-                hdLoser = value;
-              });
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.herzdurchlaufLoser, value);
               if(value) {
-                Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufLoser] = true;
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.herzdurchlaufLoser, true);
               } else {
-                Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufLoser] = false;
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.herzdurchlaufLoser, false);
               }
             }),
             Text("Ja", style: Helpers.getStyleForSwitch(context),),

@@ -307,6 +307,13 @@ class _SettingsState extends State<Settings> {
     };
 
     return Scaffold(
+      appBar:  AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(
+          "Accounteinstellungen",
+          style: TextStyle(color: Theme.of(context).colorScheme.background),
+        ),
+      ),
       body: Container(
         color: Theme.of(context).colorScheme.background,
         padding: const EdgeInsets.all(15.0),

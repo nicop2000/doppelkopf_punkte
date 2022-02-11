@@ -6,6 +6,7 @@ import 'package:doppelkopf_punkte/model/player.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Result extends StatefulWidget {
   const Result({Key? key}) : super(key: key);
@@ -21,11 +22,13 @@ class _ResultState extends State<Result> {
   @override
   void initState() {
     super.initState();
+  }
 
-    pointsForWinners = Runde.instance.pointsWinner + 1;
+  int calculateResult(BuildContext context) {
+    pointsForWinners = context.read<Runde>().pointsWinner + 1;
     winners = 0;
 
-    Runde.instance.wonPoints.forEach((player, played) {
+    context.read<Runde>().wonPoints.forEach((player, played) {
       if (played) winners++;
     });
 
@@ -42,92 +45,94 @@ class _ResultState extends State<Result> {
     List<String> result = [];
 
 
-    if (Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.gegenDieAlten]!) {
       pointsForWinners++;
       result.add("Gegen die Alten +1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.fuchs1Winner]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.fuchs1Winner]!) {
       pointsForWinners++;
       result.add("1. Fuchs gefangen +1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.fuchs2Winner]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.fuchs2Winner]!) {
       pointsForWinners++;
       result.add("2. Fuchs gefangen +1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.fuchs1Loser]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.fuchs1Loser]!) {
       pointsForWinners--;
       result.add("Gegner: 1. Fuchs gefangen -1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.fuchs2Loser]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.fuchs2Loser]!) {
       pointsForWinners--;
       result.add("Gegner: 2. Fuchs gefangen -1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufWinner]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.herzdurchlaufWinner]!) {
       pointsForWinners++;
       result.add("Herzdurchlauf +1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.herzdurchlaufLoser]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.herzdurchlaufLoser]!) {
       pointsForWinners--;
       result.add("Gegner: Herzdurchlauf -1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.karlchenWinner]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.karlchenWinner]!) {
       pointsForWinners++;
       result.add("Karlchen +1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.karlchenLoser]!) {
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.karlchenLoser]!) {
       pointsForWinners--;
       result.add("Gegner: Karlchen -1");
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
-        Runde.instance.winnerPoints[Sonderpunkte.re]! &&
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.gegenDieAlten]! &&
+        context.read<Runde>().winnerPoints[Sonderpunkte.re]! &&
         !solo) {
       result.add("Re +2");
-      pointsForWinners += Game.instance.rePoints;
+      pointsForWinners += context.read<Game>().rePoints;
     }
-    if (Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
-        Runde.instance.winnerPoints[Sonderpunkte.kontra]! &&
+    if (context.read<Runde>().winnerPoints[Sonderpunkte.gegenDieAlten]! &&
+        context.read<Runde>().winnerPoints[Sonderpunkte.kontra]! &&
         !solo) {
       result.add("Kontra +2");
-      pointsForWinners += Game.instance.rePoints;
+      pointsForWinners += context.read<Game>().rePoints;
     }
-    if (!Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
-        Runde.instance.winnerPoints[Sonderpunkte.kontra]! &&
+    if (!context.read<Runde>().winnerPoints[Sonderpunkte.gegenDieAlten]! &&
+        context.read<Runde>().winnerPoints[Sonderpunkte.kontra]! &&
         !solo) {
       result.add("Kontra +2");
-      pointsForWinners += Game.instance.rePoints;
+      pointsForWinners += context.read<Game>().rePoints;
     }
-    if (!Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]! &&
-        Runde.instance.winnerPoints[Sonderpunkte.re]! &&
+    if (!context.read<Runde>().winnerPoints[Sonderpunkte.gegenDieAlten]! &&
+        context.read<Runde>().winnerPoints[Sonderpunkte.re]! &&
         !solo) {
       result.add("Re +2");
-      pointsForWinners += Game.instance.rePoints;
+      pointsForWinners += context.read<Game>().rePoints;
     }
 
-    if (winners == 1 && Runde.instance.winnerPoints[Sonderpunkte.re]!) {
-      pointsForWinners += Game.instance.rePoints;
+    if (winners == 1 && context.read<Runde>().winnerPoints[Sonderpunkte.re]!) {
+      pointsForWinners += context.read<Game>().rePoints;
       result.add("Solo +1");
     }
 
-    if (winners == 1 && Runde.instance.winnerPoints[Sonderpunkte.kontra]!) {
-      pointsForWinners += Game.instance.rePoints;
+    if (winners == 1 && context.read<Runde>().winnerPoints[Sonderpunkte.kontra]!) {
+      pointsForWinners += context.read<Game>().rePoints;
       result.add("Kontra +2");
     }
 
-    if (winners == 3 && Runde.instance.winnerPoints[Sonderpunkte.re]!) {
-      pointsForWinners += Game.instance.rePoints;
+    if (winners == 3 && context.read<Runde>().winnerPoints[Sonderpunkte.re]!) {
+      pointsForWinners += context.read<Game>().rePoints;
       result.add("Re -2");
     }
 
 
-    if (winners == 3 && Runde.instance.winnerPoints[Sonderpunkte.kontra]!) {
-      pointsForWinners += Game.instance.rePoints;
+    if (winners == 3 && context.read<Runde>().winnerPoints[Sonderpunkte.kontra]!) {
+      pointsForWinners += context.read<Game>().rePoints;
       result.add("Kontra +2");
     }
 
-    pointsForWinners += Runde.instance.dokoWinner;
-    result.add("Doppelkopf +${Runde.instance.dokoWinner}");
-    pointsForWinners -= Runde.instance.dokoLoser;
-    result.add("Doppelkopf -${Runde.instance.dokoLoser}");
+    pointsForWinners += context.read<Runde>().dokoWinner;
+    result.add("Doppelkopf +${context.read<Runde>().dokoWinner}");
+    pointsForWinners -= context.read<Runde>().dokoLoser;
+    result.add("Doppelkopf -${context.read<Runde>().dokoLoser}");
+
+    return pointsForWinners;
   }
 
   @override
@@ -139,7 +144,7 @@ class _ResultState extends State<Result> {
         Helpers.getQuestionnaireHeadline(context, "Rundenergebnis"),
         const Spacer(flex: 3),
         Helpers.getQuestionnaireInfo(
-            context, "Die Gewinner haben $pointsForWinners Punkte erzielt"),
+            context, "Die Gewinner haben ${calculateResult(context)} Punkte erzielt"),
 
         CupertinoButton(
           onPressed: () async{
@@ -149,39 +154,39 @@ class _ResultState extends State<Result> {
             }
 
             if (winners == 3) {
-              Runde.instance.wonPoints.forEach((player, played) {
+              context.read<Runde>().wonPoints.forEach((player, played) {
                 if (played) {
                   player.won().newScore(true, false, pointsForWinners);
                 } else {
                   player.newScore(false, true, pointsForWinners * -3);
                 }
               });
-              Game.instance.newRound();
+              context.read<Game>().newRound(context);
             } else if (winners == 1) {
-              Runde.instance.wonPoints.forEach((player, played) {
+              context.read<Runde>().wonPoints.forEach((player, played) {
                 if (played) {
                   player.newScore(true, true, pointsForWinners * 3);
                 } else {
                   player.newScore(false, false, pointsForWinners * -1);
                 }
               });
-              Game.instance.newRound();
+              context.read<Game>().newRound(context);
             } else if (winners == 2) {
-              Runde.instance.wonPoints.forEach((player, played) {
+              context.read<Runde>().wonPoints.forEach((player, played) {
                 if (played) {
                   player.newScore(true, false, pointsForWinners);
                 } else {
                   player.newScore(false, false, pointsForWinners * -1);
                 }
               });
-              Game.instance.newRound();
+              context.read<Game>().newRound(context);
             }
 
             winners = 0;
-            await Game.instance.saveList(context);
+            await context.read<Game>().saveList(context);
             final BottomNavigationBar navigationBar = EnviromentVariables.keyBottomNavBar.currentWidget as BottomNavigationBar;
             navigationBar.onTap!(0);
-            Helpers.startTimer(context);
+            // Helpers.startTimer(context); //TODO LOGIK
             print("RESULT START TIMER");
 
           },

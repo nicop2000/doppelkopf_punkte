@@ -1,5 +1,4 @@
 import 'package:doppelkopf_punkte/model/game.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';

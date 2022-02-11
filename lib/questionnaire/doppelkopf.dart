@@ -2,9 +2,10 @@ import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
+
+import 'package:provider/provider.dart';
 
 class DoKos extends StatefulWidget {
   const DoKos({Key? key}) : super(key: key);
@@ -30,12 +31,12 @@ class _DoKosState extends State<DoKos> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             NumberPicker(
-              value: Runde.instance.dokoWinner,
+              value: context.watch<Runde>().dokoWinner,
               textStyle: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 17),
-              selectedTextStyle: TextStyle(color: PersistentData.getActive(), fontSize: 30, fontWeight: FontWeight.w600),
+              selectedTextStyle: TextStyle(color: context.watch<PersistentData>().getActive(), fontSize: 30, fontWeight: FontWeight.w600),
               minValue: 0,
               maxValue: 5,
-              onChanged: (value) => setState(() => Runde.instance.dokoWinner = value),
+              onChanged: (value) => context.read<Runde>().setDokoWinner(value),
             ),
           ],
         ),
@@ -45,12 +46,12 @@ class _DoKosState extends State<DoKos> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             NumberPicker(
-              value: Runde.instance.dokoLoser,
+              value: context.watch<Runde>().dokoLoser,
               textStyle: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 17),
-              selectedTextStyle: TextStyle(color: PersistentData.getActive(), fontSize: 30, fontWeight: FontWeight.w600),
+              selectedTextStyle: TextStyle(color: context.watch<PersistentData>().getActive(), fontSize: 30, fontWeight: FontWeight.w600),
               minValue: 0,
               maxValue: 5,
-              onChanged: (value) => setState(() => Runde.instance.dokoLoser = value),
+              onChanged: (value) => context.read<Runde>().setDokoLoser(value),
             ),
           ],
         ),

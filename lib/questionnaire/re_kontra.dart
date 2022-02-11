@@ -1,9 +1,9 @@
-import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 
 class ReKontra extends StatefulWidget {
   const ReKontra({Key? key}) : super(key: key);
@@ -19,8 +19,6 @@ class _ReKontraState extends State<ReKontra> {
     super.initState();
   }
 
-  bool re = Runde.instance.winnerPoints[Sonderpunkte.re]!;
-  bool kontra = Runde.instance.winnerPoints[Sonderpunkte.kontra]!;
 
 
 Map<PunkteAbsage, int> pointsW = {
@@ -39,12 +37,12 @@ Map<PunkteAbsage, int> pointsW = {
     PunkteAbsage.schwarz: 8
   };
 
-  PunkteAbsage _valWinners = Runde.instance.ansageWinner ?? PunkteAbsage.init;
-  PunkteAbsage _valLosers = Runde.instance.ansageLoser ?? PunkteAbsage.init;
   double spacing = 20.0;
 
   @override
   Widget build(BuildContext context) {
+  PunkteAbsage _valWinners = context.watch<Runde>().ansageWinner ?? PunkteAbsage.init;
+  PunkteAbsage _valLosers = context.watch<Runde>().ansageLoser ?? PunkteAbsage.init;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -61,16 +59,14 @@ Map<PunkteAbsage, int> pointsW = {
                 style: Helpers.getStyleForSwitch(context),
               ),
               Switch(
-                  value: re,
-                  activeColor: PersistentData.getActive(),
+                  value: context.watch<Runde>().winnerPoints[Sonderpunkte.re]!,
+                  activeColor: context.watch<PersistentData>().getActive(),
                   onChanged: (value) {
-                    setState(() {
-                      re = value;
-                    });
+                      context.read<Runde>().setWinnerPoints(Sonderpunkte.re, value);
                     if (value) {
-                      Runde.instance.winnerPoints[Sonderpunkte.re] = true;
+                    context.read<Runde>().setWinnerPoints(Sonderpunkte.re, true);
                     } else {
-                      Runde.instance.winnerPoints[Sonderpunkte.re] = false;
+                    context.read<Runde>().setWinnerPoints(Sonderpunkte.re, false);
                     }
                   }),
               Text(
@@ -89,16 +85,16 @@ Map<PunkteAbsage, int> pointsW = {
                 style: Helpers.getStyleForSwitch(context),
               ),
               Switch(
-                  value: kontra,
-                  activeColor: PersistentData.getActive(),
+                  value: context.watch<Runde>().winnerPoints[Sonderpunkte.kontra]!,
+                  activeColor: context.watch<PersistentData>().getActive(),
                   onChanged: (value) {
                     setState(() {
-                      kontra = value;
+                      context.read<Runde>().setWinnerPoints(Sonderpunkte.kontra, value);
                     });
                     if (value) {
-                      Runde.instance.winnerPoints[Sonderpunkte.kontra] = true;
+                      context.read<Runde>().setWinnerPoints(Sonderpunkte.kontra, true);
                     } else {
-                      Runde.instance.winnerPoints[Sonderpunkte.kontra] = false;
+                      context.read<Runde>().setWinnerPoints(Sonderpunkte.kontra, false);
                     }
                   }),
               Text(
@@ -118,11 +114,11 @@ Map<PunkteAbsage, int> pointsW = {
             title: Text('Keine Auswahl (0 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.init,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valWinners,
               onChanged: (PunkteAbsage? value) {
-                Runde.instance.ansageWinner = value;
-                Runde.instance.pointsWinner -= pointsW[_valWinners]!;
+                context.read<Runde>().setAnsageWinner(value);
+                context.read<Runde>().subtractFromPointsWinner(pointsW[_valWinners]!);
                 setState(() {
                   _valWinners = value!;
                 });
@@ -134,12 +130,12 @@ Map<PunkteAbsage, int> pointsW = {
             title: Text('Keine 90 (1 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.keine90,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valWinners,
               onChanged: (PunkteAbsage? value) {
-                Runde.instance.ansageWinner = value;
-                if (_valWinners != PunkteAbsage.init) Runde.instance.pointsWinner -= pointsW[_valWinners]!;
-                Runde.instance.pointsWinner += pointsW[value]!;
+                context.read<Runde>().setAnsageWinner(value);
+                if (_valWinners != PunkteAbsage.init) context.read<Runde>().subtractFromPointsWinner(pointsW[_valWinners]!);
+                context.read<Runde>().addToPointsWinner(pointsW[value]!);
                 setState(() {
                   _valWinners = value!;
                 });
@@ -150,12 +146,12 @@ Map<PunkteAbsage, int> pointsW = {
             title: Text('Keine 60 (2 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.keine60,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valWinners,
               onChanged: (PunkteAbsage? value) {
-                Runde.instance.ansageWinner = value;
-                if (_valWinners != PunkteAbsage.init) Runde.instance.pointsWinner -= pointsW[_valWinners]!;
-                Runde.instance.pointsWinner += pointsW[value]!;
+                context.read<Runde>().setAnsageWinner(value);
+                if (_valWinners != PunkteAbsage.init) context.read<Runde>().subtractFromPointsWinner(pointsW[_valWinners]!);
+                context.read<Runde>().addToPointsWinner(pointsW[value]!);
                 setState(() {
                   _valWinners = value!;
                 });
@@ -166,12 +162,12 @@ Map<PunkteAbsage, int> pointsW = {
             title: Text('Keine 30 (3 Punkte)',style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.keine30,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valWinners,
               onChanged: (PunkteAbsage? value) {
-                Runde.instance.ansageWinner = value;
-                if (_valWinners != PunkteAbsage.init) Runde.instance.pointsWinner -= pointsW[_valWinners]!;
-                Runde.instance.pointsWinner += pointsW[value]!;
+                context.read<Runde>().setAnsageWinner(value);
+                if (_valWinners != PunkteAbsage.init) context.read<Runde>().subtractFromPointsWinner(pointsW[_valWinners]!);
+                context.read<Runde>().addToPointsWinner(pointsW[value]!);
                 setState(() {
                   _valWinners = value!;
                 });
@@ -182,13 +178,13 @@ Map<PunkteAbsage, int> pointsW = {
             title: Text('Schwarz (4 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.schwarz,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valWinners,
               onChanged: (PunkteAbsage? value) {
+                  context.read<Runde>().setAnsageWinner(value);
+                  if (_valWinners != PunkteAbsage.init) context.read<Runde>().subtractFromPointsWinner(pointsW[_valWinners]!);
+                  context.read<Runde>().addToPointsWinner(pointsW[value]!);
                 setState(() {
-                  Runde.instance.ansageWinner = value;
-                  if (_valWinners != PunkteAbsage.init) Runde.instance.pointsWinner -= pointsW[_valWinners]!;
-                  Runde.instance.pointsWinner += pointsW[value]!;
                   _valWinners = value!;
                 });
               },
@@ -202,11 +198,29 @@ Map<PunkteAbsage, int> pointsW = {
             title: Text('Keine Auswahl (0 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.init,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valLosers,
               onChanged: (PunkteAbsage? value) {
-                Runde.instance.ansageLoser = value;
-                Runde.instance.pointsWinner -= pointsL[value]!;
+                context.read<Runde>().setAnsageLoser(value);
+                context.read<Runde>().subtractFromPointsWinner(pointsL[_valLosers]!);
+                setState(() {
+                  _valLosers = value!;
+                });
+              },
+            ),
+          ),
+
+
+          ListTile(
+            title: Text('Keine 90 (2 Punkte)', style: Helpers.getStyleForSwitch(context),),
+            leading: Radio<PunkteAbsage>(
+              value: PunkteAbsage.keine90,
+              activeColor: context.watch<PersistentData>().getActive(),
+              groupValue: _valLosers,
+              onChanged: (PunkteAbsage? value) {
+                context.read<Runde>().setAnsageLoser(value);
+                if (_valLosers != PunkteAbsage.init) context.read<Runde>().subtractFromPointsWinner(pointsL[_valLosers]!);
+                context.read<Runde>().addToPointsWinner(pointsL[value]!);
                 setState(() {
                   _valLosers = value!;
                 });
@@ -215,31 +229,15 @@ Map<PunkteAbsage, int> pointsW = {
           ),
 
           ListTile(
-            title: Text('Keine 90 (2 Punkte)', style: Helpers.getStyleForSwitch(context),),
-            leading: Radio<PunkteAbsage>(
-              value: PunkteAbsage.keine90,
-              activeColor: PersistentData.getActive(),
-              groupValue: _valLosers,
-              onChanged: (PunkteAbsage? value) {
-                Runde.instance.ansageLoser = value;
-                if (_valLosers != PunkteAbsage.init) Runde.instance.pointsWinner -= pointsL[_valLosers]!;
-                Runde.instance.pointsWinner += pointsL[value]!;
-                setState(() {
-                  _valLosers = value!;
-                });
-              },
-            ),
-          ),
-          ListTile(
             title: Text('Keine 60 (4 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.keine60,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valLosers,
               onChanged: (PunkteAbsage? value) {
-                Runde.instance.ansageLoser = value;
-                if (_valLosers != PunkteAbsage.init) Runde.instance.pointsWinner -= pointsL[_valLosers]!;
-                Runde.instance.pointsWinner += pointsL[value]!;
+                context.read<Runde>().setAnsageLoser(value);
+                if (_valLosers != PunkteAbsage.init) context.read<Runde>().subtractFromPointsWinner(pointsL[_valLosers]!);
+                context.read<Runde>().addToPointsWinner(pointsL[value]!);
                 setState(() {
                   _valLosers = value!;
                 });
@@ -250,12 +248,12 @@ Map<PunkteAbsage, int> pointsW = {
             title: Text('Keine 30 (6 Punkte)',style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.keine30,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valLosers,
               onChanged: (PunkteAbsage? value) {
-                Runde.instance.ansageLoser = value;
-                if (_valLosers != PunkteAbsage.init) Runde.instance.pointsWinner -= pointsL[_valLosers]!;
-                Runde.instance.pointsWinner += pointsL[value]!;
+                context.read<Runde>().setAnsageLoser(value);
+                if (_valLosers != PunkteAbsage.init) context.read<Runde>().subtractFromPointsWinner(pointsL[_valLosers]!);
+                context.read<Runde>().addToPointsWinner(pointsL[value]!);
                 setState(() {
                   _valLosers = value!;
                 });
@@ -266,13 +264,13 @@ Map<PunkteAbsage, int> pointsW = {
             title: Text('Schwarz (8 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<PunkteAbsage>(
               value: PunkteAbsage.schwarz,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _valLosers,
               onChanged: (PunkteAbsage? value) {
+                  context.read<Runde>().setAnsageLoser(value);
+                  if (_valLosers != PunkteAbsage.init) context.read<Runde>().subtractFromPointsWinner(pointsL[_valLosers]!);
+                  context.read<Runde>().addToPointsWinner(pointsL[value]!);
                 setState(() {
-                  Runde.instance.ansageLoser = value;
-                  if (_valLosers != PunkteAbsage.init) Runde.instance.pointsWinner -= pointsL[_valLosers]!;
-                  Runde.instance.pointsWinner += pointsL[value]!;
                   _valLosers = value!;
                 });
               },

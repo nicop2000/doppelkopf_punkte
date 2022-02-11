@@ -1,4 +1,3 @@
-import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/model/friend.dart';
 import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:provider/provider.dart';
 
 class Scanner extends StatefulWidget {
   const Scanner({Key? key}) : super(key: key);
@@ -86,7 +86,7 @@ class _ScannerState extends State<Scanner> {
       controller.pauseCamera();
       List<String> preData = result!.code.split("§");
       List<String> data = preData[1].split(":");
-      for (Friend f in AppUser.instance.friends) {
+      for (Friend f in context.read<AppUser>().friends) {
         if (f.uid == data[0]) {
           toContinue = false;
           await createAlertDialog(context,
@@ -142,7 +142,7 @@ class _ScannerState extends State<Scanner> {
           CupertinoDialogAction(
             child: Text(confirmation ? "Okay" : "Ja",),
             onPressed: () {
-              if (!confirmation) Helpers.addFriend(uid, name);
+              if (!confirmation) context.read<AppUser>().addFriend(uid, name);
               if (!confirmation) {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();

@@ -3,13 +3,17 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
-import 'package:doppelkopf_punkte/main.dart';
 import 'package:doppelkopf_punkte/model/player.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
+import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
-class Game {
+
+//flutter pub run build_runner build
+class Game extends ChangeNotifier {
   int maxRounds = 24;
   int currentRound = 1;
   List<Player> players = [];
@@ -20,13 +24,14 @@ class Game {
   bool shared = false;
   int rePoints = 2;
 
-  static const _chars =
-      'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-  static final Random _rnd = Random();
+  Game();
 
-  static String getRandomString(int length) =>
-      String.fromCharCodes(Iterable.generate(
-          length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+
+  Game setRePoints(int newValue) {
+    rePoints = newValue;
+    notifyListeners();
+    return this;
+  }
 
   Game.fromJson(Map<dynamic, dynamic> json) {
     maxRounds = int.parse(json['max']);
@@ -54,17 +59,20 @@ class Game {
 
   Game setMaxRounds(int newMax) {
     maxRounds = newMax;
+    notifyListeners();
     return this;
   }
 
   Game setCurrentRound(int current) {
     currentRound = current;
+    notifyListeners();
     return this;
   }
 
-  Game newRound() {
+  Game newRound(BuildContext context) {
     currentRound++;
-    Runde.instance.init();
+    context.read<Runde>().init(context);
+    notifyListeners();
     return this;
   }
 
@@ -74,70 +82,107 @@ class Game {
 
   Future<void> pauseList(BuildContext context) async {
     await saveList(context);
-    Helpers.timer.cancel();
+    // Helpers.timer.cancel(); //TODO
     reset();
   }
 
+  Future<void> sendListToDB(String uid, BuildContext context) async {
+    await Constants.realtimeDatabase
+        .child('endedLists/$uid')
+        .update({listname: toJson()});
+
+    await context.read<AppUser>().getMyArchivedLists();
+  }
+
   Game reset() {
-    Game.instance.setMaxRounds(18).setCurrentRound(1);
-    Game.instance.players = [];
-    Game.instance.names[0] = "";
-    Game.instance.names[1] = "";
-    Game.instance.names[2] = "";
+    setMaxRounds(18).setCurrentRound(1);
+    players = [];
+    names[0] = "";
+    names[1] = "";
+    names[2] = "";
     shared = false;
     id = getRandomString(6);
+    notifyListeners();
     return this;
   }
 
-  static setInstance(BuildContext context, Game g) {
-    instance = g;
-    Runde.instance.init();
-    int b = 3;
+  setGame(Game g, BuildContext context) {
+    maxRounds = g.maxRounds;
+    currentRound = g.currentRound;
+    players = g.players;
+    listname = g.listname;
+    names = g.names;
+    date = g.date;
+    id = g.id;
+    shared = g.shared;
+    rePoints = g.rePoints;
+    context.read<Runde>().init(context);
+    notifyListeners();
   }
 
-  static Game instance = Game._internal();
 
-  factory Game() => instance;
 
-  Game._internal();
 
   Future<void> sendTogetherList(String code) async {
     await FirebaseFirestore.instance
         .collection('workTogether')
         .doc(code)
-        .set({Game.instance.listname: Game.instance.toJson()});
+        .set({listname: toJson()});
     await Constants.realtimeDatabase
         .child('workTogether/$code')
-        .update({Game.instance.listname: Game.instance.toJson()});
+        .update({listname: toJson()});
   }
 
   Future<void> saveList(BuildContext context) async {
     await Constants.realtimeDatabase
-        .child('gamelists/${FirebaseAuth.instance.currentUser!.uid}')
+        .child('gamelists/${context.read<AppUser>().user!.uid}')
         .update({listname: toJson()});
     if (shared) {
       await sendTogetherList(id);
     }
   }
 
-  Future<void> restoreList(BuildContext context, Game game) async {
-    Game.setInstance(context, game);
+  Future<void> restoreList(Game game, BuildContext context) async {
+    setGame(game, context);
     if (game.shared) {
-      await Helpers.startTimer(context);
+      // await Helpers.startTimer(context); //TODO:??
       print("GAME RESTORE LIST");
     }
   }
 
-  Future<void> deleteList() async {
+  Future<void> deleteList(BuildContext context) async {
     await Constants.realtimeDatabase
-        .child('gamelists/${FirebaseAuth.instance.currentUser!.uid}')
+        .child('gamelists/${context.read<AppUser>().user!.uid}')
         .update({listname: null});
     await Constants.realtimeDatabase
         .child('workTogether/$id')
         .update({listname: null});
-    await Helpers.getMyPendingLists();
+    context.read<AppUser>().getMyPendingLists();
     reset();
+
   }
+
+  Future<bool> getTogetherList(String code, BuildContext context) async {
+    DataSnapshot dS =
+    await Constants.realtimeDatabase.child('workTogether/$code').once();
+    if (dS.value == null) return false;
+    var map = Map.from(dS.value);
+    setGame(map.values.map((e) => Game.fromJson(e)).toList().first, context);
+
+    return true;
+  }
+
+
+
+  static const _chars =
+      'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  static final Random _rnd = Random();
+
+  static String getRandomString(int length) =>
+      String.fromCharCodes(Iterable.generate(
+          length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+
+
 }
 
 extension BoolParsing on String {

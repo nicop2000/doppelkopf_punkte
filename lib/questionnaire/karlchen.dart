@@ -2,12 +2,8 @@ import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+
 import 'package:flutter/material.dart';
 
 class Karlchen extends StatefulWidget {
@@ -18,15 +14,8 @@ class Karlchen extends StatefulWidget {
   _KarlchenState createState() => _KarlchenState();
 }
 
-bool t() {
-  return _KarlchenState().karlWinner;
-}
-
 class _KarlchenState extends State<Karlchen> {
 
-
-  bool karlWinner = Runde.instance.winnerPoints[Sonderpunkte.karlchenWinner]!;
-  bool karlLoser = Runde.instance.winnerPoints[Sonderpunkte.karlchenLoser]!;
 
   @override
   Widget build(BuildContext context) {
@@ -42,15 +31,13 @@ class _KarlchenState extends State<Karlchen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("Nein", style: Helpers.getStyleForSwitch(context),),
-            Switch(value: karlWinner, activeColor: PersistentData.getActive(),onChanged: (value) {
-              setState(() {
+            Switch(value: context.watch<Runde>().winnerPoints[Sonderpunkte.karlchenWinner]!, activeColor: context.watch<PersistentData>().getActive(),onChanged: (value) {
 
-              karlWinner = value;
-              });
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.karlchenWinner, value);
               if(value) {
-                Runde.instance.winnerPoints[Sonderpunkte.karlchenWinner] = true;
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.karlchenWinner, true);
               } else {
-                Runde.instance.winnerPoints[Sonderpunkte.karlchenWinner] = false;
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.karlchenWinner, false);
               }
             }),
             Text("Ja", style: Helpers.getStyleForSwitch(context),),
@@ -62,15 +49,13 @@ class _KarlchenState extends State<Karlchen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("Nein", style: Helpers.getStyleForSwitch(context),),
-            Switch(value: karlLoser, activeColor: PersistentData.getActive(),onChanged: (value) {
-              setState(() {
+            Switch(value: context.watch<Runde>().winnerPoints[Sonderpunkte.karlchenLoser]!, activeColor: context.watch<PersistentData>().getActive(),onChanged: (value) {
 
-                karlLoser = value;
-              });
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.karlchenLoser, value);
               if(value) {
-                Runde.instance.winnerPoints[Sonderpunkte.karlchenLoser] = true;
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.karlchenLoser, true);
               } else {
-                Runde.instance.winnerPoints[Sonderpunkte.karlchenLoser] = false;
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.karlchenLoser, false);
               }
             }),
             Text("Ja", style: Helpers.getStyleForSwitch(context),),

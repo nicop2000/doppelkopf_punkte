@@ -1,6 +1,4 @@
 import 'package:doppelkopf_punkte/doko/graph.dart';
-import 'package:doppelkopf_punkte/helper/constants.dart';
-import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:doppelkopf_punkte/model/player.dart';
 import 'package:doppelkopf_punkte/model/user.dart';
@@ -8,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:provider/provider.dart';
 
 class SavedLists extends StatefulWidget {
   const SavedLists({Key? key}) : super(key: key);
@@ -81,12 +80,12 @@ class _SavedListsState extends State<SavedLists> {
 
   List<Widget> formLists() {
     List<Widget> tempWidget = [];
-    if (AppUser.instance.archivedLists.isEmpty) {
+    if (context.watch<AppUser>().archivedLists.isEmpty) {
       tempWidget.add(const Text("Du hast keine archivierten Listen"));
       return tempWidget;
     }
 
-    for (var game in AppUser.instance.archivedLists) {
+    for (var game in context.watch<AppUser>().archivedLists) {
       tempWidget.add(
         Column(
           children: [
@@ -256,12 +255,7 @@ class _SavedListsState extends State<SavedLists> {
             CupertinoButton(
                 child: const Text("Diese Liste löschen"),
                 onPressed: () async {
-                  await Constants.realtimeDatabase
-                      .child(
-                          'endedLists/${FirebaseAuth.instance.currentUser!.uid}/${game.listname}')
-                      .remove();
-                  await Helpers.getMyArchivedLists();
-                  setState(() {});
+                  context.read<AppUser>().deleteSavedList(game.listname);
                 }),
           ],
         ),

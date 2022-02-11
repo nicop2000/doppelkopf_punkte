@@ -1,9 +1,9 @@
-import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 
 class Points extends StatefulWidget {
   const Points({Key? key}) : super(key: key);
@@ -28,10 +28,10 @@ class _PointsState extends State<Points> {
     super.initState();
   }
 
-  Punkte _val = Runde.instance.pointSelection ?? Punkte.init;
 
   @override
   Widget build(BuildContext context) {
+  Punkte _val = context.watch<Runde>().pointSelection ?? Punkte.init;
     return Center(
       child: Column(
         children: [
@@ -42,11 +42,11 @@ class _PointsState extends State<Points> {
             title: Text('Keine Auswahl (0 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.init,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
-                Runde.instance.pointSelection = value;
-                Runde.instance.pointsWinner -= points[_val]!;
+                context.read<Runde>().setPointSelection(value);
+                context.read<Runde>().subtractFromPointsWinner(points[_val]!);
                 setState(() {
                   _val = value!;
                 });
@@ -58,12 +58,12 @@ class _PointsState extends State<Points> {
             title: Text('Keine 90 (1 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.keine90,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
-                Runde.instance.pointSelection = value;
-                if (_val != Punkte.init) Runde.instance.pointsWinner -= points[_val]!;
-                Runde.instance.pointsWinner += points[value]!;
+                context.read<Runde>().setPointSelection(value);
+                if (_val != Punkte.init) context.read<Runde>().subtractFromPointsWinner(points[_val]!);
+                context.read<Runde>().addToPointsWinner(points[value]!);
                 setState(() {
                   _val = value!;
                 });
@@ -74,12 +74,12 @@ class _PointsState extends State<Points> {
             title: Text('Keine 60 (2 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.keine60,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
-                Runde.instance.pointSelection = value;
-                if (_val != Punkte.init) Runde.instance.pointsWinner -= points[_val]!;
-                Runde.instance.pointsWinner += points[value]!;
+                context.read<Runde>().setPointSelection(value);
+                if (_val != Punkte.init) context.read<Runde>().subtractFromPointsWinner(points[_val]!);
+                context.read<Runde>().addToPointsWinner(points[value]!);
                 setState(() {
                   _val = value!;
                 });
@@ -90,12 +90,12 @@ class _PointsState extends State<Points> {
             title: Text('Keine 30 (3 Punkte)',style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.keine30,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
-                Runde.instance.pointSelection = value;
-                if (_val != Punkte.init) Runde.instance.pointsWinner -= points[_val]!;
-                Runde.instance.pointsWinner += points[value]!;
+                context.read<Runde>().setPointSelection(value);
+                if (_val != Punkte.init) context.read<Runde>().subtractFromPointsWinner(points[_val]!);
+                context.read<Runde>().addToPointsWinner(points[value]!);
                 setState(() {
                   _val = value!;
                 });
@@ -106,13 +106,13 @@ class _PointsState extends State<Points> {
             title: Text('Schwarz (4 Punkte)', style: Helpers.getStyleForSwitch(context),),
             leading: Radio<Punkte>(
               value: Punkte.schwarz,
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
               groupValue: _val,
               onChanged: (Punkte? value) {
                 setState(() {
-                  Runde.instance.pointSelection = value;
-                  if (_val != Punkte.init) Runde.instance.pointsWinner -= points[_val]!;
-                  Runde.instance.pointsWinner += points[value]!;
+                  context.read<Runde>().setPointSelection(value);
+                  if (_val != Punkte.init) context.read<Runde>().subtractFromPointsWinner(points[_val]!);
+                  context.read<Runde>().addToPointsWinner(points[value]!);
                   _val = value!;
                 });
               },

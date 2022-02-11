@@ -1,27 +1,12 @@
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+
 import 'package:flutter/material.dart';
 
-class Alten extends StatefulWidget {
+class Alten extends StatelessWidget {
   const Alten({Key? key}) : super(key: key);
-
-  @override
-  _AltenState createState() => _AltenState();
-}
-
-bool t() {
-  return _AltenState().isOn;
-}
-
-class _AltenState extends State<Alten> {
-  bool getAlte() {
-    return isOn;
-  }
-
-  bool isOn = Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten]!;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -39,19 +24,15 @@ class _AltenState extends State<Alten> {
               style: Helpers.getStyleForSwitch(context),
             ),
             Switch(
-              value: isOn,
+              value: context.watch<Runde>().winnerPoints[Sonderpunkte.gegenDieAlten]!,
               onChanged: (value) {
-                setState(() {
-
-                  isOn = value;
-                });
                 if (value) {
-                  Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten] = true;
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.gegenDieAlten, true);
                 } else {
-                  Runde.instance.winnerPoints[Sonderpunkte.gegenDieAlten] = false;
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.gegenDieAlten, false);
                 }
               },
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
 
             ),
             Text(

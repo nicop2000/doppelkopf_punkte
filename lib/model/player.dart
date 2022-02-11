@@ -1,15 +1,13 @@
-class Player {
-  final String _name;
-  String uid = "null";
+import 'friend.dart';
+
+class Player extends Friend{
   List<int> _points = [0];
   List<int> _won = [0];
   List<int> _lost = [0];
   List<int> _solo = [0];
 
   Player.fromJson(Map<dynamic, dynamic> json)
-      : _name = json['name'],
-        uid = json['uid'],
-        _points =
+      : _points =
             (json['points'] as List<Object?>)
                 .map((e) =>
                 int.parse(e!.toString()))
@@ -26,10 +24,11 @@ class Player {
         _solo = (json['solo'] as List<Object?>)
             .map((e) =>
             int.parse(e!.toString()))
-            .toList();
+            .toList(),
+  super.fromJson(json);
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'name': _name,
+        'name': name,
         'uid': uid,
         'points': _points,
         'won' : _won,
@@ -37,7 +36,7 @@ class Player {
         'solo': _solo,
       };
 
-  Player(this._name);
+  Player({required name, required uid}) : super(name: name, uid: uid);
 
   Player newPoints(int p) {
     _points.add(getLastScore() + p);
@@ -64,7 +63,7 @@ class Player {
 
   List<int> getAllSolo() => _solo;
 
-  String getName() => _name;
+  String getName() => name;
 
   Player won() {
     _won.add(_won.last + 1);

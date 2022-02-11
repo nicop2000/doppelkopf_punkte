@@ -4,6 +4,7 @@ import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:provider/provider.dart';
 
 class GameStatistics extends StatefulWidget {
   const GameStatistics({Key? key}) : super(key: key);
@@ -15,26 +16,26 @@ class GameStatistics extends StatefulWidget {
 class _GameStatisticsState extends State<GameStatistics> {
   @override
   Widget build(BuildContext context) {
-    if (Game.instance.players.isNotEmpty) {
+    if (context.watch<Game>().players.isNotEmpty) {
       Map<String, double> dataMapWon = {
-        Game.instance.players[0].getName(): Game.instance.players[0].getWon().toDouble(),
-        Game.instance.players[1].getName(): Game.instance.players[1].getWon().toDouble(),
-        Game.instance.players[2].getName(): Game.instance.players[2].getWon().toDouble(),
-        Game.instance.players[3].getName(): Game.instance.players[3].getWon().toDouble(),
+        context.watch<Game>().players[0].getName(): context.watch<Game>().players[0].getWon().toDouble(),
+        context.watch<Game>().players[1].getName(): context.watch<Game>().players[1].getWon().toDouble(),
+        context.watch<Game>().players[2].getName(): context.watch<Game>().players[2].getWon().toDouble(),
+        context.watch<Game>().players[3].getName(): context.watch<Game>().players[3].getWon().toDouble(),
       };
 
       Map<String, double> dataMapLost = {
-        Game.instance.players[0].getName(): Game.instance.players[0].getLost().toDouble(),
-        Game.instance.players[1].getName(): Game.instance.players[1].getLost().toDouble(),
-        Game.instance.players[2].getName(): Game.instance.players[2].getLost().toDouble(),
-        Game.instance.players[3].getName(): Game.instance.players[3].getLost().toDouble(),
+        context.watch<Game>().players[0].getName(): context.watch<Game>().players[0].getLost().toDouble(),
+        context.watch<Game>().players[1].getName(): context.watch<Game>().players[1].getLost().toDouble(),
+        context.watch<Game>().players[2].getName(): context.watch<Game>().players[2].getLost().toDouble(),
+        context.watch<Game>().players[3].getName(): context.watch<Game>().players[3].getLost().toDouble(),
       };
 
       Map<String, double> dataMapSolo = {
-        Game.instance.players[0].getName(): Game.instance.players[0].getSolo().toDouble(),
-        Game.instance.players[1].getName(): Game.instance.players[1].getSolo().toDouble(),
-        Game.instance.players[2].getName(): Game.instance.players[2].getSolo().toDouble(),
-        Game.instance.players[3].getName(): Game.instance.players[3].getSolo().toDouble(),
+        context.watch<Game>().players[0].getName(): context.watch<Game>().players[0].getSolo().toDouble(),
+        context.watch<Game>().players[1].getName(): context.watch<Game>().players[1].getSolo().toDouble(),
+        context.watch<Game>().players[2].getName(): context.watch<Game>().players[2].getSolo().toDouble(),
+        context.watch<Game>().players[3].getName(): context.watch<Game>().players[3].getSolo().toDouble(),
       };
       return Container(
         color: Theme.of(context).colorScheme.background,
@@ -45,7 +46,7 @@ class _GameStatisticsState extends State<GameStatistics> {
                 newPie(dataMapWon, "Gewonnen", context),
                 newPie(dataMapLost, "Verloren", context),
                 newPie(dataMapSolo, "Solos", context),
-                Graph(Game.instance)
+                Graph(context.watch<Game>())
               ],
             ),
           ),

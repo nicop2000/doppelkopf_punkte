@@ -1,9 +1,9 @@
-import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/runde.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 
 class Fuchs extends StatefulWidget {
   const Fuchs({Key? key}) : super(key: key);
@@ -18,10 +18,7 @@ class _FuchsState extends State<Fuchs> {
     super.initState();
   }
 
-  bool fuchs1Winner = Runde.instance.winnerPoints[Sonderpunkte.fuchs1Winner]!;
-  bool fuchs2Winner = Runde.instance.winnerPoints[Sonderpunkte.fuchs2Winner]!;
-  bool fuchs1Loser = Runde.instance.winnerPoints[Sonderpunkte.fuchs1Loser]!;
-  bool fuchs2Loser = Runde.instance.winnerPoints[Sonderpunkte.fuchs2Loser]!;
+
 
   @override
   Widget build(BuildContext context) {
@@ -41,18 +38,18 @@ class _FuchsState extends State<Fuchs> {
               style: Helpers.getStyleForSwitch(context),
             ),
             Switch(
-              value: fuchs1Winner,
+              value: context.watch<Runde>().winnerPoints[Sonderpunkte.fuchs1Winner]!,
               onChanged: (value) {
-                setState(() {
-                  fuchs1Winner = value;
-                });
+
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs1Winner, value);
+
                 if (value) {
-                  Runde.instance.winnerPoints[Sonderpunkte.fuchs1Winner] = true;
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs1Winner, true);
                 } else {
-                  Runde.instance.winnerPoints[Sonderpunkte.fuchs1Winner] = false;
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs1Winner, false);
                 }
               },
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
             ),
             Text(
               "Ja",
@@ -69,18 +66,18 @@ class _FuchsState extends State<Fuchs> {
               style: Helpers.getStyleForSwitch(context),
             ),
             Switch(
-              value: fuchs2Winner,
+              value: context.watch<Runde>().winnerPoints[Sonderpunkte.fuchs2Winner]!,
               onChanged: (value) {
-                setState(() {
-                  fuchs2Winner = value;
-                });
+
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs2Winner, value);
+
                 if (value) {
-                  Runde.instance.winnerPoints[Sonderpunkte.fuchs2Winner] = true;
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs2Winner, true);
                 } else {
-                  Runde.instance.winnerPoints[Sonderpunkte.fuchs2Winner] = false;
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs2Winner, false);
                 }
               },
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
             ),
             Text(
               "Ja",
@@ -99,18 +96,18 @@ class _FuchsState extends State<Fuchs> {
               style: Helpers.getStyleForSwitch(context),
             ),
             Switch(
-              value: fuchs1Loser,
+              value: context.watch<Runde>().winnerPoints[Sonderpunkte.fuchs1Loser]!,
               onChanged: (value) {
-                setState(() {
-                  fuchs1Loser = value;
-                });
+
+                context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs1Loser, value);
+
                 if (value) {
-                  Runde.instance.winnerPoints[Sonderpunkte.fuchs1Loser] = true;
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs1Loser, true);
                 } else {
-                  Runde.instance.winnerPoints[Sonderpunkte.fuchs1Loser] = false;
+                  context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs1Loser, false);
                 }
               },
-              activeColor: PersistentData.getActive(),
+              activeColor: context.watch<PersistentData>().getActive(),
             ),
             Text(
               "Ja",
@@ -127,16 +124,15 @@ class _FuchsState extends State<Fuchs> {
               style: Helpers.getStyleForSwitch(context),
             ),
             Switch(
-                value: fuchs2Loser,
-                activeColor: PersistentData.getActive(),
+                value: context.watch<Runde>().winnerPoints[Sonderpunkte.fuchs2Loser]!,
+                activeColor: context.watch<PersistentData>().getActive(),
                 onChanged: (value) {
-                  setState(() {
-                    fuchs2Loser = value;
-                  });
+
+    context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs2Loser, value);
                   if (value) {
-                    Runde.instance.winnerPoints[Sonderpunkte.fuchs2Loser] = true;
+                    context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs2Loser, true);
                   } else {
-                    Runde.instance.winnerPoints[Sonderpunkte.fuchs2Loser] = false;
+                    context.read<Runde>().setWinnerPoints(Sonderpunkte.fuchs2Loser, false);
                   }
                 }),
             Text(

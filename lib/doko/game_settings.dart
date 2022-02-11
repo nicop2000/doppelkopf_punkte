@@ -1,7 +1,8 @@
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/main.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+
 import 'package:flutter/material.dart';
 
 class GameSettings extends StatefulWidget {
@@ -61,15 +62,15 @@ class _GameSettingsState extends State<GameSettings> {
       padding: const EdgeInsets.only(bottom: 40),
       child: GestureDetector(
         onTap: () {
-            PersistentData.setBackground(background!.red, background.green,
+            context.read<PersistentData>().setBackground(background!.red, background.green,
                 background.blue, background.opacity);
-            PersistentData.setOnBackground(onBackground!.red, onBackground.green,
+            context.read<PersistentData>().setOnBackground(onBackground!.red, onBackground.green,
                 onBackground.blue, onBackground.opacity);
-            PersistentData.setPrimaryColor(
+            context.read<PersistentData>().setPrimaryColor(
                 primary!.red, primary.green, primary.blue, primary.opacity);
-            PersistentData.setActive(
+            context.read<PersistentData>().setActive(
                 active!.red, active.green, active.blue, active.opacity);
-            DokoPunkte.setAppState(context);
+            // DokoPunkte.setAppState(context); //TODO
         },
         child: Container(
           decoration: BoxDecoration(

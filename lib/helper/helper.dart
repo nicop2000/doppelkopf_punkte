@@ -8,10 +8,10 @@ import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:provider/provider.dart';
 
 enum routers { login, register, lectureHalls, registerSeat, admin }
 
@@ -92,16 +92,12 @@ class Helpers {
     );
   }
 
-  static userLoggedIn() async {
-    await getMyArchivedLists();
-    await getMyPendingLists();
-    await getFriends();
-  }
 
-  static Future<bool> authenticate() async {
+
+  static Future<bool> authenticate(BuildContext context) async {
     final LocalAuthentication auth = LocalAuthentication();
 
-    if (!AppUser.instance.canCheckBio || !AppUser.instance.deviceSupported) {
+    if (!context.read<AppUser>().canCheckBio || !context.read<AppUser>().deviceSupported) {
       return false;
     }
     try {
@@ -117,84 +113,23 @@ class Helpers {
     }
   }
 
-  static Future<void> getFriends() async {
-    await initFriends();
-    DataSnapshot dS = await Constants.realtimeDatabase
-        .child('friends/${FirebaseAuth.instance.currentUser!.uid}')
-        .once();
-    if (dS.value == null) return;
-    Map<String, String> myFriendMap = Map.from(dS.value);
-
-    myFriendMap.forEach((uid, name) {
-      AppUser.instance.friends.add(Friend(uid, name));
-    });
-  }
-
-  static Future<void> initFriends() async {
-    AppUser.instance.friends.clear();
-    AppUser.instance.friends.add(Friend("null", "Extra 1"));
-    AppUser.instance.friends.add(Friend("null", "Extra 2"));
-    AppUser.instance.friends.add(Friend("null", "Extra 3"));
-  }
-
-  static Future<void> addFriend(String uid, String name) async {
-    // await Constants.fbDB.child('friends/${FirebaseAuth.instance.currentUser!.uid}').set([{"Nico1" : "Andrea"}, {"Nico2" : "Klaas"},{"Nico3" : "Klaaas"}]);
-    await Constants.realtimeDatabase
-        .child('friends/${FirebaseAuth.instance.currentUser!.uid}')
-        .update({uid: name});
-  }
-
-  static Future<void> sendMyListToDB(String uid) async {
-    await Constants.realtimeDatabase
-        .child('endedLists/$uid')
-        .update({Game.instance.listname: Game.instance.toJson()});
-
-    await getMyArchivedLists();
-  }
-
-  static Future<void> getMyArchivedLists() async {
-    DataSnapshot dS = await Constants.realtimeDatabase
-        .child('endedLists/${FirebaseAuth.instance.currentUser!.uid}')
-        .once();
-    if (dS.value == null) return;
-    var map = Map.from(dS.value);
-    AppUser.instance.archivedLists =
-        map.values.map((e) => Game.fromJson(e)).toList();
-    return;
-  }
-
-  static Future<void> getMyPendingLists() async {
-    DataSnapshot dS = await Constants.realtimeDatabase
-        .child('gamelists/${FirebaseAuth.instance.currentUser!.uid}')
-        .once();
-    if (dS.value == null) return;
-    var map = Map.from(dS.value);
-    AppUser.instance.pendingLists = map.values.map((e) => Game.fromJson(e)).toList();
-    return;
-  }
-
-  static Future<bool> getTogetherList(BuildContext context, String code) async {
 
 
-    DataSnapshot dS =
-        await Constants.realtimeDatabase.child('workTogether/$code').once();
-    if (dS.value == null) return false;
-    var map = Map.from(dS.value);
-    Game.setInstance(context, map.values.map((e) => Game.fromJson(e)).toList().first);
 
-    return true;
 
-  }
 
-  static Timer timer = Timer(const Duration(days: 2), () {});
 
-  static Future<void> startTimer(BuildContext context) async {
-    getTogetherList(context, Game.instance.id);
-    timer = Timer.periodic(Constants.getData, (timer) async {
-      await getTogetherList(context, Game.instance.id);
-      print("TIMER");
-    });
-  }
+
+
+  // static Timer timer = Timer(const Duration(days: 2), () {}); //TODO: TIMERLOGIK
+  //
+  // static Future<void> startTimer(BuildContext context) async {
+  //   getTogetherList(context, Game.instance.id);
+  //   timer = Timer.periodic(Constants.getData, (timer) async {
+  //     await getTogetherList(context, Game.instance.id);
+  //     print("TIMER");
+  //   });
+  // }
 
   static Future<bool> validatePassword(String password) async {
     var firebaseUser = FirebaseAuth.instance.currentUser;

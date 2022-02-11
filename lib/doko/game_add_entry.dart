@@ -16,6 +16,7 @@ import 'package:doppelkopf_punkte/questionnaire/result.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:provider/provider.dart';
 
 class GameAddEntry extends StatefulWidget {
   const GameAddEntry({Key? key}) : super(key: key);
@@ -41,26 +42,26 @@ class _GameAddEntryState extends State<GameAddEntry> {
   @override
   void initState() {
     print("INIT ADD");
-    if (Helpers.timer.isActive) {
-      Helpers.timer.cancel();
-    }
+    // if (Helpers.timer.isActive) { //TODO LOGIK
+    //   Helpers.timer.cancel();
+    // }
     super.initState();
   }
 
   @override
   void deactivate() {
     print("DEACTIVATE");
-    if (!Helpers.timer.isActive) {
+    // if (!Helpers.timer.isActive) {
       print("START IN GAME ADD ENTRY");
-      Helpers.startTimer(context);
-    }
+      // Helpers.startTimer(context); //TODO LOGIK
+    // }
     super.deactivate();
   }
 
 
   @override
   Widget build(BuildContext context) {
-    if (Game.instance.players.isEmpty) {
+    if (context.watch<Game>().players.isEmpty) {
       return Container(
         color: Theme.of(context).colorScheme.background,
         child: Center(
@@ -77,8 +78,8 @@ class _GameAddEntryState extends State<GameAddEntry> {
               }),
         ),
       );
-    } else if (Game.instance.players.isNotEmpty &&
-        !(Game.instance.currentRound - 1 >= Game.instance.maxRounds)) {
+    } else if (context.watch<Game>().players.isNotEmpty &&
+        !(context.watch<Game>().currentRound - 1 >= context.watch<Game>().maxRounds)) {
       return Container(
         color: Theme.of(context).colorScheme.background,
         child: Padding(
@@ -103,7 +104,7 @@ class _GameAddEntryState extends State<GameAddEntry> {
                 count: pages.length,
                 effect: JumpingDotEffect(
                   dotColor: Theme.of(context).colorScheme.primary,
-                  activeDotColor: PersistentData.getActive(),
+                  activeDotColor: context.watch<PersistentData>().getActive(),
                   verticalOffset: 20,
                   dotHeight: 8,
                   dotWidth: 8,

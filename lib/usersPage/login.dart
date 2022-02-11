@@ -1,11 +1,14 @@
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/model/user.dart';
+import 'package:doppelkopf_punkte/ui/components/EmailTextField.dart';
+import 'package:doppelkopf_punkte/ui/components/PasswordTextField.dart';
 import 'package:doppelkopf_punkte/usersPage/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -28,120 +31,152 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Helpers.getHeadline(context, "Login"),
-        Column(
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(
+          "Login",
+          style: TextStyle(color: Theme.of(context).colorScheme.background),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              autocorrect: false,
-              controller: emailLogin,
-              decoration: InputDecoration(
-                hintText: "something@example.de",
-                hintStyle: const TextStyle(
-                  color: Constants.mainGreyHint,
+            Helpers.getHeadline(context, "Login"),
+            Column(
+              children: [
+                TextField(
+                  autocorrect: false,
+                  controller: emailLogin,
+                  decoration: InputDecoration(
+                    hintText: "something@example.de",
+                    hintStyle: const TextStyle(
+                      color: Constants.mainGreyHint,
+                    ),
+                    labelStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    labelText: "E-Mail",
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Constants.mainGrey),
+                    ),
+                  ),
                 ),
-                labelStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                labelText: "E-Mail",
-                focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Constants.mainGrey),
-                ),
-              ),
+                TextField(
+                  autocorrect: false,
+                  controller: passwordLogin,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: "Passwort eingeben",
+                    hintStyle: const TextStyle(
+                      color: Constants.mainGreyHint,
+                    ),
+                    labelStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    labelText: "Passwort",
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Constants.mainGrey),
+                    ),
+                  ),
+                )
+              ],
             ),
-            TextField(
-              autocorrect: false,
-              controller: passwordLogin,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: "Passwort eingeben",
-                hintStyle: const TextStyle(
-                  color: Constants.mainGreyHint,
-                ),
-                labelStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                labelText: "Passwort",
-                focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Constants.mainGrey),
-                ),
+            Helpers.getErrorDisplay(errorMsg),
+            ElevatedButton(
+              onPressed: () async {
+                errorMsg = "";
+                try {
+                  UserCredential uC = await FirebaseAuth.instance
+                      .signInWithEmailAndPassword(
+                          email: emailLogin.text, password: passwordLogin.text);
+                  context.read<AppUser>().user = uC.user!;
+                  Navigator.of(context).pop();
+                } on FirebaseAuthException catch (e) {
+                  if (e.code == 'user-not-found' || e.code == 'wrong-password') {
+                    setState(() {
+                      errorMsg = "Es konnte kein Account mit diesen Zugangsdaten"
+                          " gefunden werden";
+                    });
+                  } else if (e.code == 'invalid-email') {
+                    setState(() {
+                      errorMsg = "Die E-Mailadresse ist nicht gültig";
+                    });
+                  }
+                } catch (e) {
+                  setState(() {
+                    errorMsg = "Ein Fehler ist aufgetreten: ${e.toString()}";
+                  });
+                }
+              },
+              child: const Text("Login"),
+            ),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(),
+                children: <TextSpan>[
+                  const TextSpan(
+                    text: 'Haben Sie Ihr ',
+                    style: Constants.regularInfoTextStyle,
+                  ),
+                  TextSpan(
+                    text: 'Passwort vergessen?',
+                    style: TextStyle(
+                      fontSize: 15.0,
+                      color: Theme.of(context).colorScheme.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        createAlertDialog(context);
+                      },
+                  ),
+                  const TextSpan(
+                    text: '\nHaben Sie noch kein Konto? ',
+                    style: Constants.regularInfoTextStyle,
+                  ),
+                  TextSpan(
+                      text: 'Jetzt registrieren!',
+                      style: TextStyle(
+                        fontSize: 15.0,
+                        color: Theme.of(context).colorScheme.primary,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                        // Navigator.of(context).pop();
+                          _showRegister(context);
+                        }),
+                ],
               ),
             ),
           ],
         ),
-        Helpers.getErrorDisplay(errorMsg),
-        ElevatedButton(
-          onPressed: () async {
-            errorMsg = "";
-            try {
-              UserCredential uC = await FirebaseAuth.instance
-                  .signInWithEmailAndPassword(
-                      email: emailLogin.text, password: passwordLogin.text);
-              AppUser.instance.user = uC.user!;
-              Navigator.of(context).pop();
-            } on FirebaseAuthException catch (e) {
-              if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-                setState(() {
-                  errorMsg = "Es konnte kein Account mit diesen Zugangsdaten"
-                      " gefunden werden";
-                });
-              } else if (e.code == 'invalid-email') {
-                setState(() {
-                  errorMsg = "Die E-Mailadresse ist nicht gültig";
-                });
-              }
-            } catch (e) {
-              setState(() {
-                errorMsg = "Ein Fehler ist aufgetreten: ${e.toString()}";
-              });
-            }
-          },
-          child: const Text("Login"),
-        ),
-        RichText(
-          text: TextSpan(
-            style: const TextStyle(),
-            children: <TextSpan>[
-              const TextSpan(
-                text: 'Haben Sie Ihr ',
-                style: Constants.regularInfoTextStyle,
-              ),
-              TextSpan(
-                text: 'Passwort vergessen?',
-                style: TextStyle(
-                  fontSize: 15.0,
-                  color: Theme.of(context).colorScheme.primary,
-                  decoration: TextDecoration.underline,
-                ),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    createAlertDialog(context);
-                  },
-              ),
-              const TextSpan(
-                text: '\nHaben Sie noch kein Konto? ',
-                style: Constants.regularInfoTextStyle,
-              ),
-              TextSpan(
-                  text: 'Jetzt registrieren!',
-                  style: TextStyle(
-                    fontSize: 15.0,
-                    color: Theme.of(context).colorScheme.primary,
-                    decoration: TextDecoration.underline,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                    // Navigator.of(context).pop();
-                      _showRegister(context);
-                    }),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
+  }
+
+  TextField buildTextField(BuildContext context) {
+    return TextField(
+      autocorrect: false,
+      controller: emailLogin,
+      decoration: InputDecoration(
+      hintText: "something@example.de",
+      hintStyle: const TextStyle(
+      color: Constants.mainGreyHint,
+      ),
+      labelStyle: TextStyle(
+      color: Theme.of(context).colorScheme.primary,
+      ),
+      labelText: "E-Mail",
+      focusedBorder: const UnderlineInputBorder(
+      borderSide: BorderSide(color: Constants.mainGrey),
+      ),
+      ),
+      );
   }
 
   void _showRegister(BuildContext context) {
@@ -305,3 +340,7 @@ class _LoginState extends State<Login> {
         });
   }
 }
+
+
+
+
