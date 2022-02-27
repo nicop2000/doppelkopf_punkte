@@ -1,3 +1,4 @@
+import 'package:doppelkopf_punkte/doko/friends_management.dart';
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
@@ -25,7 +26,7 @@ class AccountInfo extends StatelessWidget {
           style: TextStyle(color: Theme.of(context).colorScheme.background),
         ),
       ),
-      body: context.watch<AppUser>().loggedIn
+      body: context.watch<AppUser>().user != null
           ? SizedBox(
               height: MediaQuery.of(context).size.height * 0.75,
               child: Padding(
@@ -84,10 +85,10 @@ class AccountInfo extends StatelessWidget {
                                                 onPressed: () {
                                                   EnviromentVariables.prefs
                                                       .clear();
-                                                  // DokoPunkte.setAppState( //TODO
-                                                  //     context);
-                                                  FirebaseAuth.instance
-                                                      .signOut();
+                                                  context
+                                                      .read<AppUser>()
+                                                      .logoutRoutine();
+                                                  Navigator.of(context).pop();
                                                   Navigator.of(context).pop();
                                                 }),
                                             CupertinoDialogAction(
@@ -126,32 +127,70 @@ class AccountInfo extends StatelessWidget {
                                   showCupertinoDialog(
                                       context: context,
                                       builder: (BuildContext context) {
+                                        TextEditingController pw = TextEditingController();
                                         return CupertinoAlertDialog(
                                           title: const Text("Achtung"),
-                                          content: const Text(
-                                              "Du bist im Begriff, alle deine Daten zu löschen. Das beinhaltet sämtliche lokalen Speicher als auch die Online-Daten und dein Konto. Willst du wirklich fortfahren? (Kann nicht rückgängig gemacht werden)"),
+                                          content: Column(
+                                            children: [
+                                              const Text(
+                                                  "Du bist im Begriff, alle deine Daten zu löschen. "
+                                                      "Das beinhaltet sämtliche lokalen Speicher als auch die Online-Daten und dein Konto. "
+                                                      "Willst du wirklich fortfahren? (Kann nicht rückgängig gemacht werden)"
+                                                      "Bitte gib hierzu zur Sicherheit dein Passwort ein:"),
+                                              CupertinoTextField(
+                                                autocorrect: false,
+                                                controller: pw,
+                                                obscureText: true,
+                                              )
+                                            ],
+                                          ),
+
                                           actions: <Widget>[
                                             CupertinoDialogAction(
                                                 child: const Text("Ja"),
                                                 onPressed: () async {
-                                                  EnviromentVariables.prefs
-                                                      .clear();
-                                                  await Constants
-                                                      .realtimeDatabase
-                                                      .child(
-                                                          'friends/${FirebaseAuth.instance.currentUser!.uid}')
-                                                      .remove();
-                                                  await Constants
-                                                      .realtimeDatabase
-                                                      .child(
-                                                          'lists/${FirebaseAuth.instance.currentUser!.uid}')
-                                                      .remove();
-                                                  FirebaseAuth
-                                                      .instance.currentUser!
-                                                      .delete();
-                                                  // DokoPunkte.setAppState( //TODO
-                                                  //     context);
-                                                  Navigator.of(context).pop();
+                                                  bool result = false;
+                                                  result = await Helpers.validatePassword(pw.text);
+                                                  if (result) {
+                                                    EnviromentVariables.prefs
+                                                        .clear();
+                                                    await Constants
+                                                        .realtimeDatabase
+                                                        .child(
+                                                        'friends/${FirebaseAuth.instance.currentUser!.uid}')
+                                                        .remove();
+                                                    FirebaseAuth
+                                                        .instance.currentUser!
+                                                        .delete();
+                                                    context
+                                                        .read<AppUser>()
+                                                        .logoutRoutine();
+                                                    Navigator.of(context).pop();
+                                                    Navigator.of(context).pop();
+                                                  } else {
+                                                    pw.text = "";
+                                                    await showCupertinoDialog(
+                                                        context: context,
+                                                        builder: (BuildContext context) {
+                                                          return CupertinoAlertDialog(
+                                                            title: const Text(":c"),
+                                                            content: Column(
+                                                              children: const [
+                                                                Text("Das war wohl nix!"),
+                                                              ],
+                                                            ),
+                                                            actions: <Widget>[
+                                                              CupertinoDialogAction(
+                                                                child: const Text("OK"),
+                                                                onPressed: () {
+                                                                  Navigator.of(context).pop();
+                                                                },
+                                                              ),
+                                                            ],
+                                                          );
+                                                        });
+                                                  }
+
                                                 }),
                                             CupertinoDialogAction(
                                                 child: const Text("Nein"),
@@ -185,7 +224,8 @@ class AccountInfo extends StatelessWidget {
                               tooltip: "Freunde verwalten",
                               color: Theme.of(context).colorScheme.primary,
                               onPressed: () async {
-                                // _showFriendManagement(context); //TODO
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (_) => const FriendsManagement()));
                               },
                               icon: Icon(
                                 CupertinoIcons.rectangle_stack_person_crop,

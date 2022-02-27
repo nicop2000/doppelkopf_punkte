@@ -70,7 +70,6 @@ class _GameSettingsState extends State<GameSettings> {
                 primary!.red, primary.green, primary.blue, primary.opacity);
             context.read<PersistentData>().setActive(
                 active!.red, active.green, active.blue, active.opacity);
-            // DokoPunkte.setAppState(context); //TODO
         },
         child: Container(
           decoration: BoxDecoration(

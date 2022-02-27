@@ -16,10 +16,7 @@ class _WinnerState extends State<Winner> {
 
   @override
   void initState() {
-
     super.initState();
-
-    setState(() {});
   }
 
   @override

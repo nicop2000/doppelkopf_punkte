@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:doppelkopf_punkte/doko/game_list/current_list.dart';
 import 'package:doppelkopf_punkte/doko/game_list/no_current_list.dart';
@@ -12,33 +13,26 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameList extends StatefulWidget {
-  const GameList({Key? key}) : super(key: key);
+class GameListScreen extends StatefulWidget {
+  const GameListScreen({Key? key}) : super(key: key);
 
   @override
-  State<GameList> createState() => _GameListState();
+  State<GameListScreen> createState() => _GameListScreenState();
 }
 
-class _GameListState extends State<GameList> {
+class _GameListScreenState extends State<GameListScreen> {
   Map<Friend, bool> activated = {};
 
-  var timer = Timer(Duration(days: 2), () {});
 
   @override
   void initState() {
-    // if (context.watch<Game>().shared) {
-    // timer = Timer.periodic(Constants.refreshList, (timer) { //TODO: LOGIK NEU MACHEN
-    //   print("SET");
-    //   setState(() {});
-    // });
-    // }
-    setState(() {});
+    log("INIT LIST SCREEN");
     super.initState();
   }
 
   @override
   void dispose() {
-    // if (timer.isActive) timer.cancel(); //TODO
+    log("DISPOSE LIST SCREEN");
     super.dispose();
   }
 
@@ -46,20 +40,20 @@ class _GameListState extends State<GameList> {
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).colorScheme.background,
-      child: context.watch<AppUser>().loggedIn
+      child: context.watch<AppUser>().user != null
           ? context.watch<Game>().players.isEmpty
               ? const NoCurrentList()
               : const CurrentList()
           : Center(
               child: CupertinoButton(
-                child: const Text("Bitte melde dich erst an"),
+                child: const Text("Klicke hier um dich anzumelden oder zu registrieren"),
                 onPressed: () {
                   showCupertinoDialog(
                     context: context,
                     barrierDismissible: true,
                     builder: (BuildContext context) {
                       return CupertinoAlertDialog(
-                        title: const Text("Bitte wähle eine Option aus"),
+                        title: const Text("Hast du bereits ein Konto?"),
                         actions: [
                           CupertinoDialogAction(
                             child: const Text("Login"),

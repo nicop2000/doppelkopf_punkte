@@ -4,6 +4,7 @@ import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
+import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:doppelkopf_punkte/questionnaire/alten.dart';
 import 'package:doppelkopf_punkte/questionnaire/doppelkopf.dart';
 import 'package:doppelkopf_punkte/questionnaire/fuchs.dart';
@@ -27,6 +28,7 @@ class GameAddEntry extends StatefulWidget {
 
 class _GameAddEntryState extends State<GameAddEntry> {
   final controller = PageController(keepPage: true);
+
   final pages = [
     const Winner(),
     const Alten(),
@@ -41,20 +43,13 @@ class _GameAddEntryState extends State<GameAddEntry> {
 
   @override
   void initState() {
-    print("INIT ADD");
-    // if (Helpers.timer.isActive) { //TODO LOGIK
-    //   Helpers.timer.cancel();
-    // }
+    context.read<Runde>().init(context);
     super.initState();
   }
 
   @override
   void deactivate() {
     print("DEACTIVATE");
-    // if (!Helpers.timer.isActive) {
-      print("START IN GAME ADD ENTRY");
-      // Helpers.startTimer(context); //TODO LOGIK
-    // }
     super.deactivate();
   }
 

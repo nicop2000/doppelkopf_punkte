@@ -2,7 +2,6 @@ import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:doppelkopf_punkte/model/friend.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -22,12 +21,12 @@ class AppUser extends ChangeNotifier{
 
   setUser(User? user) {
     this.user = user;
-    notifyListeners();
   }
 
   logoutRoutine() async {
     await FirebaseAuth.instance.signOut();
-    await initFriends();
+    setUser(null);
+    initFriends();
     isAdmin = false;
     archivedLists = [];
     pendingLists = [];
@@ -35,9 +34,19 @@ class AppUser extends ChangeNotifier{
     notifyListeners();
   }
 
+  loginRoutine() async{
+    await setUser(FirebaseAuth.instance.currentUser);
+    canCheckBio = await localAuth.canCheckBiometrics;
+    deviceSupported = await localAuth.isDeviceSupported();
+    notifyListeners();
+    getMyArchivedLists();
+    getMyPendingLists();
+    getFriends();
+  }
+
 
   
-  Future<void> initFriends() async {
+  initFriends(){
     friends.clear();
     friends.add(Friend(uid: "null", name: "Extra 1"));
     friends.add(Friend(uid: "null", name: "Extra 2"));
@@ -45,59 +54,77 @@ class AppUser extends ChangeNotifier{
   }
 
   Future<void> addFriend(String uid, String name) async {
-    // await Constants.fbDB.child('friends/${user!.uid}').set([{"Nico1" : "Andrea"}, {"Nico2" : "Klaas"},{"Nico3" : "Klaaas"}]);
     await Constants.realtimeDatabase
         .child('friends/${user!.uid}')
         .update({uid: name});
-    await getFriends();
+    getFriends();
+  }
+
+  Future<void> removeFriend(String uid) async {
+    await Constants.realtimeDatabase
+        .child(
+        'friends/${user!.uid}')
+        .update({uid: null});
+    getFriends();
   }
 
 
 
+
+
   Future<void> getFriends() async {
-    await initFriends();
-    DataSnapshot dS = await Constants.realtimeDatabase
+    initFriends();
+    Constants.realtimeDatabase
         .child('friends/${user!.uid}')
-        .once();
-    if (dS.value == null) return;
-    Map<String, String> myFriendMap = Map.from(dS.value);
+        .once().then((snapshot) {
+
+      if (snapshot.value == null) {
+        friends.clear();
+        notifyListeners();
+        return;
+      }
+    Map<String, String> myFriendMap = Map.from(snapshot.value);
 
     for(MapEntry entry in myFriendMap.entries) {
       friends.add(Friend(uid: entry.key, name: entry.value));
     }
     notifyListeners();
+    });
   }
   
-  loginRoutine() async{
-    user = FirebaseAuth.instance.currentUser!;
-    canCheckBio = await localAuth.canCheckBiometrics;
-    deviceSupported = await localAuth.isDeviceSupported();
-    await getMyArchivedLists();
-    await getMyPendingLists();
-    await getFriends();
-  }
+
 
   Future<void> getMyArchivedLists() async {
-    DataSnapshot dS = await Constants.realtimeDatabase
+    Constants.realtimeDatabase
         .child('endedLists/${user!.uid}')
-        .once();
-    if (dS.value == null) return;
-    var map = Map.from(dS.value);
+        .once().then((snapshot) {
+      if (snapshot.value == null) {
+        archivedLists.clear();
+        notifyListeners();
+        return;
+      }
+    var map = Map.from(snapshot.value);
     archivedLists =
         map.values.map((e) => Game.fromJson(e)).toList();
     notifyListeners();
+    }); //TODO No Error Handling
     return;
   }
 
   Future<void> getMyPendingLists() async {
-    DataSnapshot dS = await Constants.realtimeDatabase
+    Constants.realtimeDatabase
         .child('gamelists/${user!.uid}')
-        .once();
-    if (dS.value == null) return;
-    var map = Map.from(dS.value);
+        .once().then((snapshot) {
+    if (snapshot.value == null) {
+      pendingLists.clear();
+      notifyListeners();
+      return;
+    }
+    var map = Map.from(snapshot.value);
     pendingLists = map.values.map((e) => Game.fromJson(e)).toList();
     notifyListeners();
     return;
+    }); //TODO No Error Handling
   }
 
   Future<void> deleteSavedList(String listname) async {

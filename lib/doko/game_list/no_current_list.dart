@@ -111,7 +111,6 @@ class _NoCurrentListState extends State<NoCurrentList> {
                                     newValue
                                         ? context.read<Game>().setRePoints(2)
                                         : context.read<Game>().setRePoints(1);
-                                    setState(() {});
                                   }),
                               const Text("2 Punkte")
                             ],
@@ -188,13 +187,7 @@ class _NoCurrentListState extends State<NoCurrentList> {
                                       .restoreList(game, context);
                                 }
                               }
-                              setState(() {});
-                              print("GAME_LIST RESTORE");
-                              // timer = Timer.periodic( //TODO
-                              //     Constants.refreshList, (timer) {
-                              //   print("SET");
-                              //   setState(() {});
-                              // });
+                              // setState(() {}); //TDSEST
                             });
                       }),
 
@@ -287,17 +280,8 @@ class _NoCurrentListState extends State<NoCurrentList> {
                           } else {
                             EnviromentVariables.othersList = true;
                             workTogether.text = "";
-                            // Helpers.startTimer(context); //TODO LOGIK
-                            print("GAME_LIST ELSE");
-                            // timer = Timer.periodic( //TODO
-                            //     Constants.refreshList, (timer) {
-                            //   print("SET");
-                            //   setState(() {});
-                            // });
                           }
                         }
-
-                        setState(() {});
                       }),
               ],
 

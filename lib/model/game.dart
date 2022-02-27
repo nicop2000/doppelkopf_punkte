@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,9 +24,15 @@ class Game extends ChangeNotifier {
   String id = getRandomString(6);
   bool shared = false;
   int rePoints = 2;
+  Timer? timer;
 
   Game();
 
+
+  setPlayers(List<Player> newPlayerList) {
+    players = newPlayerList;
+    notifyListeners();
+  }
 
   Game setRePoints(int newValue) {
     rePoints = newValue;
@@ -76,13 +83,24 @@ class Game extends ChangeNotifier {
     return this;
   }
 
+  Game deleteRound(BuildContext context) {
+    currentRound--;
+    for (Player player in players) {
+      player.removeLastRound();
+    }
+    saveList(context);
+    notifyListeners();
+    return this;
+  }
+
   bool gameEnd() {
     return maxRounds == currentRound;
   }
 
   Future<void> pauseList(BuildContext context) async {
     await saveList(context);
-    // Helpers.timer.cancel(); //TODO
+    context.read<AppUser>().getFriends();
+    context.read<AppUser>().getMyPendingLists();
     reset();
   }
 
@@ -92,6 +110,7 @@ class Game extends ChangeNotifier {
         .update({listname: toJson()});
 
     await context.read<AppUser>().getMyArchivedLists();
+    context.read<AppUser>().getMyPendingLists();
   }
 
   Game reset() {
@@ -116,10 +135,8 @@ class Game extends ChangeNotifier {
     id = g.id;
     shared = g.shared;
     rePoints = g.rePoints;
-    context.read<Runde>().init(context);
     notifyListeners();
   }
-
 
 
 
@@ -144,10 +161,6 @@ class Game extends ChangeNotifier {
 
   Future<void> restoreList(Game game, BuildContext context) async {
     setGame(game, context);
-    if (game.shared) {
-      // await Helpers.startTimer(context); //TODO:??
-      print("GAME RESTORE LIST");
-    }
   }
 
   Future<void> deleteList(BuildContext context) async {
@@ -158,8 +171,8 @@ class Game extends ChangeNotifier {
         .child('workTogether/$id')
         .update({listname: null});
     context.read<AppUser>().getMyPendingLists();
+    context.read<AppUser>().getFriends();
     reset();
-
   }
 
   Future<bool> getTogetherList(String code, BuildContext context) async {
@@ -168,7 +181,6 @@ class Game extends ChangeNotifier {
     if (dS.value == null) return false;
     var map = Map.from(dS.value);
     setGame(map.values.map((e) => Game.fromJson(e)).toList().first, context);
-
     return true;
   }
 

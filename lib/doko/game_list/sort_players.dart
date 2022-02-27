@@ -22,7 +22,7 @@ class _SortPlayersState extends State<SortPlayers> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(
-          "Spieler auswählen",
+          "Spielereihenfolge",
           style: TextStyle(color: Theme.of(context).colorScheme.background),
         ),
       ),
@@ -61,7 +61,7 @@ class _SortPlayersState extends State<SortPlayers> {
                   ),
                 ),
                 CupertinoButton(child: const Text("Spiel starten"), onPressed: () {
-                  context.read<Game>().players = widget.playersToBe.convertToPlayers();
+                  context.read<Game>().setPlayers(widget.playersToBe.convertToPlayers());
                   context.read<Runde>().init(context);
                   Navigator.of(context).pop();
                 })

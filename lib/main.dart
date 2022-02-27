@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:doppelkopf_punkte/doko/app_overlay.dart';
 import 'package:doppelkopf_punkte/helper/enviroment_variables.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
@@ -25,7 +26,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   EnviromentVariables.prefs = await SharedPreferences.getInstance();
-  // if (Helpers.timer.isActive) Helpers.timer.cancel(); //TODO LOGIK
 
 
 
@@ -49,6 +49,12 @@ class DokoPunkte extends StatefulWidget {
 }
 
 class _DokoPunkteState extends State<DokoPunkte> {
+
+  @override
+  void initState() {
+    if (FirebaseAuth.instance.currentUser != null) context.read<AppUser>().loginRoutine();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

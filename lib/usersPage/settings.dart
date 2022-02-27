@@ -147,9 +147,9 @@ class _SettingsState extends State<Settings> {
                   try {
                     await FirebaseAuth.instance.currentUser!
                         .updateEmail(newV.text);
+                    Navigator.of(context).pop();
                     await createAlertDialog(context,
                         "Ihre E-Mailadresse wurde erfolgreich geändert");
-                    Navigator.popAndPushNamed(context, '/');
                   } catch (e) {
                     setState(() {
                       errMsg = e.toString();
@@ -236,9 +236,9 @@ class _SettingsState extends State<Settings> {
                     try {
                       await FirebaseAuth.instance.currentUser!
                           .updatePassword(newV.text);
+                      Navigator.of(context).pop();
                       await createAlertDialog(
                           context, "Dein Passwort wurde erfolgreich geändert");
-                      Navigator.popAndPushNamed(context, '/');
                     } catch (e) {
                       setState(() {
                         errMsg = e.toString();
@@ -265,7 +265,7 @@ class _SettingsState extends State<Settings> {
             children: [
               const Spacer(),
               Text(FirebaseAuth.instance.currentUser!.displayName != null
-                  ? "Der aktuelle Name lautet: ${FirebaseAuth.instance.currentUser!.displayName}"
+                  ? "Der aktuelle Name lautet: ${FirebaseAuth.instance.currentUser!.displayName} (Nach der Namenänderung musst du dich neu einloggen)"
                   : "Es ist noch kein Name festgelegt"),
               TextFormField(
                 autocorrect: false,
@@ -293,6 +293,7 @@ class _SettingsState extends State<Settings> {
                   if (_formKey.currentState!.validate()) {
                     await FirebaseAuth.instance.currentUser!
                         .updateDisplayName(newV.text);
+                    Navigator.of(context).pop();
                     await createAlertDialog(
                         context, "Dein Name wurde erfolgreich geändert");
                     // Navigator.of(context).pop();

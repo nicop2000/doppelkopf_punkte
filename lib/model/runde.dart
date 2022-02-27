@@ -70,7 +70,6 @@ class Runde extends ChangeNotifier{
     pointsWinner = 0;
     dokoWinner = 0;
     dokoLoser = 0;
-    notifyListeners();
     return this;
   }
 

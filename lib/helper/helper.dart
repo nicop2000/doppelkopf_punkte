@@ -1,13 +1,8 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:doppelkopf_punkte/helper/constants.dart';
-import 'package:doppelkopf_punkte/main.dart';
-import 'package:doppelkopf_punkte/model/friend.dart';
-import 'package:doppelkopf_punkte/model/game.dart';
-import 'package:doppelkopf_punkte/model/runde.dart';
 import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
@@ -92,44 +87,87 @@ class Helpers {
     );
   }
 
-
-
   static Future<bool> authenticate(BuildContext context) async {
     final LocalAuthentication auth = LocalAuthentication();
-
-    if (!context.read<AppUser>().canCheckBio || !context.read<AppUser>().deviceSupported) {
-      return false;
-    }
-    try {
-      return await auth.authenticate(
-          localizedReason:
-              'Um in die Einstellungen zu gelangen, ist eine erweiterte Authentifizierung notwendig',
-          biometricOnly: false,
-          useErrorDialogs: true,
-          stickyAuth: true);
-    } on PlatformException catch (e) {
-      print(e);
-      return false;
+    if (context.read<AppUser>().canCheckBio &&
+        context.read<AppUser>().deviceSupported) {
+      try {
+        return await auth.authenticate(
+            localizedReason:
+                'Um in die Einstellungen zu gelangen, ist eine erweiterte Authentifizierung notwendig',
+            biometricOnly: false,
+            useErrorDialogs: true,
+            stickyAuth: true);
+      } on PlatformException catch (e) {
+        // await FirebaseCrashlytics.instance.recordError(e, null,
+        //     reason: 'erweiterte Authentifizierung fehlgeschlagen durch PlatformException in Helper authenticate()');
+        return false;
+      }
+    } else {
+      TextEditingController pw = TextEditingController();
+      var result = false;
+      await showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              title: const Text("Authentifizierung erforderlich"),
+              content: Column(
+                children: [
+                  const Text(
+                      "Dies ist ein sensibler Bereich. Authentifizierung erfordlerlich"),
+                  const Text(
+                      "Da das Gerät keine Berechtigung für biometrische Authentifizierung hat bzw. keine biometrischen Sensoren hat, geben Sie ihr Passwort erneut ein:"),
+                  CupertinoTextField(
+                    autocorrect: false,
+                    controller: pw,
+                    obscureText: true,
+                  )
+                ],
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text("Abbrechen"),
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                CupertinoDialogAction(
+                  child: const Text("Abschicken"),
+                  onPressed: () async {
+                    result = await validatePassword(pw.text);
+                    if (result) {
+                      Navigator.of(context).pop();
+                    } else {
+                      pw.text = "";
+                      await showCupertinoDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return CupertinoAlertDialog(
+                              title: const Text(":c"),
+                              content: Column(
+                                children: const [
+                                  Text("Das war wohl nix!"),
+                                ],
+                              ),
+                              actions: <Widget>[
+                                CupertinoDialogAction(
+                                  child: const Text("OK"),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          });
+                    }
+                  },
+                ),
+              ],
+            );
+          });
+      return result;
     }
   }
-
-
-
-
-
-
-
-
-
-  // static Timer timer = Timer(const Duration(days: 2), () {}); //TODO: TIMERLOGIK
-  //
-  // static Future<void> startTimer(BuildContext context) async {
-  //   getTogetherList(context, Game.instance.id);
-  //   timer = Timer.periodic(Constants.getData, (timer) async {
-  //     await getTogetherList(context, Game.instance.id);
-  //     print("TIMER");
-  //   });
-  // }
 
   static Future<bool> validatePassword(String password) async {
     var firebaseUser = FirebaseAuth.instance.currentUser;

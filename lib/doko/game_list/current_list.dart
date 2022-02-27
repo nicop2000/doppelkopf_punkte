@@ -3,7 +3,6 @@ import 'package:doppelkopf_punkte/helper/helper.dart';
 import 'package:doppelkopf_punkte/helper/persistent_data.dart';
 import 'package:doppelkopf_punkte/model/game.dart';
 import 'package:doppelkopf_punkte/model/player.dart';
-import 'package:doppelkopf_punkte/model/user.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,10 +31,7 @@ class _CurrentListState extends State<CurrentList> {
           padding: const EdgeInsets.all(20.0),
           child: StickyHeader(
             header: Container(
-              color: Theme
-                  .of(context)
-                  .colorScheme
-                  .background,
+              color: Theme.of(context).colorScheme.background,
               child: Padding(
                 padding: const EdgeInsets.only(top: 15.0),
                 child: Row(
@@ -58,13 +54,9 @@ class _CurrentListState extends State<CurrentList> {
             padding: const EdgeInsets.only(bottom: 15.0),
             child: Center(
               child: Text(
-                "Noch ${context.watch<Game>().maxRounds + 1 - context.watch<Game>()
-                    .currentRound} Runden",
+                "Noch ${context.watch<Game>().maxRounds + 1 - context.watch<Game>().currentRound} Runden",
                 style: TextStyle(
-                  color: Theme
-                      .of(context)
-                      .colorScheme
-                      .onBackground,
+                  color: Theme.of(context).colorScheme.onBackground,
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                 ),
@@ -74,68 +66,45 @@ class _CurrentListState extends State<CurrentList> {
         if (context.watch<Game>().currentRound > 1)
           if (!EnviromentVariables.review)
             CupertinoButton(
-              // color: Theme.of(context).colorScheme.onPrimary,
                 child: Text(
                   "Letzten Eintrag löschen",
                   style: TextStyle(
-                    color: Theme
-                        .of(context)
-                        .colorScheme
-                        .primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 onPressed: () {
-                  context.read<Game>().currentRound--;
-                  for (var player in context.read<Game>().players) {
-                    player.removeLastRound();
-                  }
-                  context.read<Game>().saveList(context);
-                  setState(() {});
+                  context.read<Game>().deleteRound(context);
                 }),
         if (EnviromentVariables.othersList)
           CupertinoButton(
               child: Text(
                 "Zusammenarbeit auf diesem Gerät beenden",
                 style: TextStyle(
-                  color: Theme
-                      .of(context)
-                      .colorScheme
-                      .primary,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               onPressed: () {
-                // Helpers.timer.cancel();
-                // timer.cancel(); //TODO
                 context.read<Game>().reset();
-                setState(() {});
               }),
         if (!EnviromentVariables.othersList)
           CupertinoButton(
-            // color: Theme.of(context).colorScheme.onPrimary,
+              // color: Theme.of(context).colorScheme.onPrimary,
               child: Text(
                 "Liste pausieren",
                 style: TextStyle(
-                  color: Theme
-                      .of(context)
-                      .colorScheme
-                      .primary,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               onPressed: () async {
                 await context.read<Game>().pauseList(context);
-                // timer.cancel(); //TODO
-                setState(() {});
               }),
         if (!EnviromentVariables.othersList)
           CupertinoButton(
-            // color: Theme.of(context).colorScheme.onPrimary,
+              // color: Theme.of(context).colorScheme.onPrimary,
               child: Text(
                 "Liste löschen",
                 style: TextStyle(
-                  color: Theme
-                      .of(context)
-                      .colorScheme
-                      .primary,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               onPressed: () {
@@ -150,17 +119,14 @@ class _CurrentListState extends State<CurrentList> {
                           CupertinoDialogAction(
                             isDefaultAction: true,
                             child: const Text("Nein"),
-                            onPressed: () =>
-                                Navigator.of(context).pop(),
+                            onPressed: () => Navigator.of(context).pop(),
                           ),
                           CupertinoDialogAction(
                             child: const Text("Ja"),
                             onPressed: () async {
                               await context.read<Game>().deleteList(context);
-                              // timer.cancel(); //TODO
-                              // Helpers.timer.cancel();
                               Navigator.of(context).pop();
-                              setState(() {});
+                              // setState(() {}); //TDSEST
                             },
                           )
                         ],
@@ -172,11 +138,6 @@ class _CurrentListState extends State<CurrentList> {
           CupertinoButton(
             onPressed: () {
               context.read<Game>().shared = true;
-              // Helpers.startTimer(context); //TODO
-              // timer = Timer.periodic(Constants.refreshList, (timer) { //TODO
-              //   print("SET");
-              //   setState(() {});
-              // });
               context.read<Game>().saveList(context);
               showCupertinoDialog(
                   context: context,
@@ -200,10 +161,7 @@ class _CurrentListState extends State<CurrentList> {
             child: Text(
               "Liste als gemeinsam freigeben",
               style: TextStyle(
-                color: Theme
-                    .of(context)
-                    .colorScheme
-                    .primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           )
@@ -212,54 +170,72 @@ class _CurrentListState extends State<CurrentList> {
             child: Text(
               "Code für Zusammenarbeit: ${context.watch<Game>().id}",
               style: TextStyle(
-                color: Theme
-                    .of(context)
-                    .colorScheme
-                    .onBackground,
+                color: Theme.of(context).colorScheme.onBackground,
               ),
             ),
           ),
+        if (context.watch<Game>().shared && !context.watch<Game>().gameEnd())
+          CupertinoButton(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Gemeinsame Liste aktualisieren"),
+                  Icon(
+                    Icons.refresh,
+                    color: context.watch<PersistentData>().getPrimaryColor(),
+                  )
+                ],
+              ),
+              onPressed: () async {
+                await context
+                    .read<Game>()
+                    .getTogetherList(context.read<Game>().id, context);
+                await context.read<Game>().saveList(context);
+              }),
         if (context.watch<Game>().currentRound - 1 >=
-            context.watch<Game>().maxRounds &&
+                context.watch<Game>().maxRounds &&
             context.watch<Game>().players[0].uid != "null")
           CupertinoButton(
               child: Text(
-                  "Punkte für ${context.watch<Game>().players[0]
-                      .getName()} in Datenbank übertragen & speichern"),
+                  "Punkte für ${context.watch<Game>().players[0].getName()} in Datenbank übertragen & speichern"),
               onPressed: () {
-                context.read<Game>().sendListToDB(context.read<Game>().players[0].uid, context);
+                context
+                    .read<Game>()
+                    .sendListToDB(context.read<Game>().players[0].uid, context);
               }),
         if (context.watch<Game>().currentRound - 1 >=
-            context.watch<Game>().maxRounds &&
+                context.watch<Game>().maxRounds &&
             context.watch<Game>().players[1].uid != "null")
           CupertinoButton(
               child: Text(
-                  "Punkte für ${context.watch<Game>().players[1]
-                      .getName()} in Datenbank übertragen & speichern"),
+                  "Punkte für ${context.watch<Game>().players[1].getName()} in Datenbank übertragen & speichern"),
               onPressed: () {
-                context.read<Game>().sendListToDB(context.read<Game>().players[1].uid, context);
+                context
+                    .read<Game>()
+                    .sendListToDB(context.read<Game>().players[1].uid, context);
               }),
         if (context.watch<Game>().currentRound - 1 >=
-            context.watch<Game>().maxRounds &&
+                context.watch<Game>().maxRounds &&
             context.watch<Game>().players[2].uid != "null")
           CupertinoButton(
               child: Text(
-                  "Punkte für ${context.watch<Game>().players[2]
-                      .getName()} in Datenbank übertragen & speichern"),
+                  "Punkte für ${context.watch<Game>().players[2].getName()} in Datenbank übertragen & speichern"),
               onPressed: () {
-                context.read<Game>().sendListToDB(context.read<Game>().players[2].uid, context);
+                context
+                    .read<Game>()
+                    .sendListToDB(context.read<Game>().players[2].uid, context);
               }),
         if (context.watch<Game>().currentRound - 1 >=
-            context.watch<Game>().maxRounds &&
+                context.watch<Game>().maxRounds &&
             context.watch<Game>().players[3].uid != "null")
           CupertinoButton(
               child: Text(
-                  "Punkte für ${context.watch<Game>().players[3]
-                      .getName()} in Datenbank übertragen & speichern"),
+                  "Punkte für ${context.watch<Game>().players[3].getName()} in Datenbank übertragen & speichern"),
               onPressed: () {
-                context.read<Game>().sendListToDB(context.read<Game>().players[3].uid, context);
+                context
+                    .read<Game>()
+                    .sendListToDB(context.read<Game>().players[3].uid, context);
               }),
-
         if (context.watch<Game>().currentRound - 1 >=
             context.watch<Game>().maxRounds)
           CupertinoButton(
@@ -277,17 +253,14 @@ class _CurrentListState extends State<CurrentList> {
                           CupertinoDialogAction(
                             isDefaultAction: true,
                             child: const Text("Nein"),
-                            onPressed: () =>
-                                Navigator.of(context).pop(),
+                            onPressed: () => Navigator.of(context).pop(),
                           ),
                           CupertinoDialogAction(
                             child: const Text("Ja"),
                             onPressed: () async {
                               await context.read<Game>().deleteList(context);
-                              // timer.cancel(); //TODO
-                              // Helpers.timer.cancel(); //TODO
                               Navigator.of(context).pop();
-                              setState(() {});
+                              // setState(() {}); //TDSEST
                             },
                           )
                         ],
@@ -298,6 +271,7 @@ class _CurrentListState extends State<CurrentList> {
       ],
     );
   }
+
   List<Widget> getListMinusHead() {
     List<Widget> temp = getList();
     for (var element in temp) {
@@ -326,10 +300,7 @@ class _CurrentListState extends State<CurrentList> {
       fontSize: 16,
       color: geber
           ? context.watch<PersistentData>().getActive()
-          : Theme
-          .of(context)
-          .colorScheme
-          .onBackground,
+          : Theme.of(context).colorScheme.onBackground,
     );
   }
 
@@ -347,10 +318,7 @@ class _CurrentListState extends State<CurrentList> {
       temp.add(Text(
         "$i",
         style: TextStyle(
-          color: Theme
-              .of(context)
-              .colorScheme
-              .onBackground,
+          color: Theme.of(context).colorScheme.onBackground,
         ),
       ));
       temp.add(SizedBox(
@@ -369,8 +337,8 @@ class _CurrentListState extends State<CurrentList> {
         style: getListHeadline(
             context,
             ((((context.read<Game>().currentRound - 1) % 4) == indicator) &&
-                !(context.read<Game>().currentRound - 1 >=
-                    context.read<Game>().maxRounds))
+                    !(context.read<Game>().currentRound - 1 >=
+                        context.read<Game>().maxRounds))
                 ? true
                 : false),
       ),
@@ -382,10 +350,7 @@ class _CurrentListState extends State<CurrentList> {
       temp.add(Text(
         "${p.getAllPoints()[i]}",
         style: TextStyle(
-          color: Theme
-              .of(context)
-              .colorScheme
-              .onBackground,
+          color: Theme.of(context).colorScheme.onBackground,
         ),
       ));
       temp.add(SizedBox(

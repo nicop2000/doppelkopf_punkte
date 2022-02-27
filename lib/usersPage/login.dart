@@ -48,41 +48,8 @@ class _LoginState extends State<Login> {
             Helpers.getHeadline(context, "Login"),
             Column(
               children: [
-                TextField(
-                  autocorrect: false,
-                  controller: emailLogin,
-                  decoration: InputDecoration(
-                    hintText: "something@example.de",
-                    hintStyle: const TextStyle(
-                      color: Constants.mainGreyHint,
-                    ),
-                    labelStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    labelText: "E-Mail",
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Constants.mainGrey),
-                    ),
-                  ),
-                ),
-                TextField(
-                  autocorrect: false,
-                  controller: passwordLogin,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: "Passwort eingeben",
-                    hintStyle: const TextStyle(
-                      color: Constants.mainGreyHint,
-                    ),
-                    labelStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    labelText: "Passwort",
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Constants.mainGrey),
-                    ),
-                  ),
-                )
+                EmailTextField(context, emailLogin),
+                PasswordTextField(context, passwordLogin),
               ],
             ),
             Helpers.getErrorDisplay(errorMsg),
@@ -90,15 +57,28 @@ class _LoginState extends State<Login> {
               onPressed: () async {
                 errorMsg = "";
                 try {
+                  showCupertinoDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return const CupertinoAlertDialog(
+                          title:
+                              Text("Benutzer wird eingeloggt. Bitte warten..."),
+                          content: CupertinoActivityIndicator(),
+                        );
+                      });
                   UserCredential uC = await FirebaseAuth.instance
                       .signInWithEmailAndPassword(
                           email: emailLogin.text, password: passwordLogin.text);
-                  context.read<AppUser>().user = uC.user!;
+                  await context.read<AppUser>().loginRoutine();
+                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 } on FirebaseAuthException catch (e) {
-                  if (e.code == 'user-not-found' || e.code == 'wrong-password') {
+                  Navigator.of(context).pop();
+                  if (e.code == 'user-not-found' ||
+                      e.code == 'wrong-password') {
                     setState(() {
-                      errorMsg = "Es konnte kein Account mit diesen Zugangsdaten"
+                      errorMsg =
+                          "Es konnte kein Account mit diesen Zugangsdaten"
                           " gefunden werden";
                     });
                   } else if (e.code == 'invalid-email') {
@@ -107,6 +87,7 @@ class _LoginState extends State<Login> {
                     });
                   }
                 } catch (e) {
+                  Navigator.of(context).pop(); //TODO in finally{} ?
                   setState(() {
                     errorMsg = "Ein Fehler ist aufgetreten: ${e.toString()}";
                   });
@@ -147,8 +128,11 @@ class _LoginState extends State<Login> {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                        // Navigator.of(context).pop();
-                          _showRegister(context);
+                          // Navigator.of(context).pop();
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const Register()));
                         }),
                 ],
               ),
@@ -157,26 +141,6 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
-  }
-
-  TextField buildTextField(BuildContext context) {
-    return TextField(
-      autocorrect: false,
-      controller: emailLogin,
-      decoration: InputDecoration(
-      hintText: "something@example.de",
-      hintStyle: const TextStyle(
-      color: Constants.mainGreyHint,
-      ),
-      labelStyle: TextStyle(
-      color: Theme.of(context).colorScheme.primary,
-      ),
-      labelText: "E-Mail",
-      focusedBorder: const UnderlineInputBorder(
-      borderSide: BorderSide(color: Constants.mainGrey),
-      ),
-      ),
-      );
   }
 
   void _showRegister(BuildContext context) {
@@ -211,7 +175,6 @@ class _LoginState extends State<Login> {
                         ),
                       ],
                     ),
-
                     const Register(),
                     const Spacer(),
                   ],
@@ -225,10 +188,8 @@ class _LoginState extends State<Login> {
   }
 
   void createAlertDialog(BuildContext context) {
-
     TextEditingController _controllerDialog = TextEditingController();
     showDialog(
-
         context: context,
         builder: (context) {
           return AlertDialog(
@@ -243,10 +204,8 @@ class _LoginState extends State<Login> {
                       "Passwort zurücksetzen",
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.onBackground,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600
-                      ),
-
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600),
                     ),
                     padding: EdgeInsets.fromLTRB(15.0,
                         MediaQuery.of(context).size.height / 64, 15.0, 15.0),
@@ -274,7 +233,6 @@ class _LoginState extends State<Login> {
                       borderRadius: BorderRadius.circular(20.0),
                       color: Theme.of(context).colorScheme.primary,
                       child: MaterialButton(
-
                         minWidth: MediaQuery.of(context).size.width / 2,
                         // padding: EdgeInsets.fromLTRB(10.0, 15.0, 10.0, 15.0),
                         child: Text(
@@ -291,7 +249,8 @@ class _LoginState extends State<Login> {
                             final snackBar = SnackBar(
                               content: const Text(
                                   "E-Mail wurde erfolgreich versendet. Prüfe auch dein Spam-Postfach!"),
-                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
                             );
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(snackBar);
@@ -301,7 +260,8 @@ class _LoginState extends State<Login> {
                               final snackBar = SnackBar(
                                 content: const Text(
                                     "Wenn es einen Nutzer mit dieser E-Mailadresse gibt, wird eine E-Mail mit einem Link zum Zurücksetzten dorthin versendet werden."),
-                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
                               );
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(snackBar);
@@ -309,7 +269,8 @@ class _LoginState extends State<Login> {
                               final snackBar = SnackBar(
                                 content: Text(
                                     "Es ist ein Fehler aufgetreten: ${e.toString()}"),
-                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
                               );
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(snackBar);
@@ -340,7 +301,3 @@ class _LoginState extends State<Login> {
         });
   }
 }
-
-
-
-

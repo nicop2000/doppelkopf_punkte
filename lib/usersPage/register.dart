@@ -1,5 +1,9 @@
 import 'package:doppelkopf_punkte/model/user.dart';
+import 'package:doppelkopf_punkte/ui/components/EmailTextField.dart';
+import 'package:doppelkopf_punkte/ui/components/NameTextField.dart';
+import 'package:doppelkopf_punkte/ui/components/PasswordTextField.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:doppelkopf_punkte/helper/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -52,93 +56,10 @@ class _RegisterState extends State<Register> {
               key: _formKey,
               child: Column(
                 children: [
-                  TextFormField(
-                    autocorrect: false,
-                    controller: nameRegister,
-                    decoration: InputDecoration(
-                      hintText: "Max",
-                      hintStyle: const TextStyle(
-                        color: Constants.mainGreyHint,
-                      ),
-                      labelStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      labelText: "Vorname",
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Constants.mainGrey),
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    autocorrect: false,
-                    validator: (value) {
-                      return EmailValidator.validate(value!)
-                          ? null
-                          : "Die E-Mailadresse ist nicht gültig";
-                    },
-                    controller: emailRegister,
-                    decoration: InputDecoration(
-                      errorMaxLines: 2,
-                      hintText: "something@example.de",
-                      hintStyle: const TextStyle(
-                        color: Constants.mainGreyHint,
-                      ),
-                      labelStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      labelText: "E-Mail",
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Constants.mainGrey),
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    autocorrect: false,
-                    validator: (value) {
-                      return Helpers.validatePasswordStrength(value!)
-                          ? null
-                          : "Das Passwort entspricht nicht den Richlinien. Es muss Groß- und Kleinschreibung, sowie Zahlen und Sonderzeichen enthalten, sowie mind. 8 Zeichen lang sein.";
-                    },
-                    controller: passwordRegister,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      errorMaxLines: 3,
-                      hintText: "Passwort eingeben",
-                      hintStyle: const TextStyle(
-                        color: Constants.mainGreyHint,
-                      ),
-                      labelStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      labelText: "Passwort",
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Constants.mainGrey),
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    autocorrect: false,
-                    validator: (value) {
-                      return passwordRegister.text == value
-                          ? null
-                          : "Die Passwörter stimmen nicht überein";
-                    },
-                    controller: passwordRepeatRegister,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: "Passwort erneut eingeben",
-                      hintStyle: const TextStyle(
-                        color: Constants.mainGreyHint,
-                      ),
-                      labelStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      labelText: "Passwortwiederholung",
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Constants.mainGrey),
-                      ),
-                    ),
-                  ),
+                  NameTextField(context, nameRegister),
+                  EmailTextField(context, emailRegister),
+                  PasswordTextFieldRegister(context, passwordRegister),
+                  PasswordTextFieldRegisterRepeat(context, passwordRepeatRegister, passwordRegister)
                 ],
               ),
             ),
@@ -147,18 +68,27 @@ class _RegisterState extends State<Register> {
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   try {
+                    showCupertinoDialog(context: context, builder: (BuildContext context) {
+                      return const CupertinoAlertDialog(title: Text("Benutzer wird registriert. Bitte warten..."),content: CupertinoActivityIndicator(),);
+                    });
                     UserCredential uC = await FirebaseAuth.instance
                         .createUserWithEmailAndPassword(
                             email: emailRegister.text,
                             password: passwordRegister.text);
-                    context.read<AppUser>().user = uC.user!;
+                    await context.read<AppUser>().loginRoutine();
+                    await context.read<AppUser>().user!.updateDisplayName(nameRegister.text);
+                    await context.read<AppUser>().user!.sendEmailVerification();
+                    await FirebaseAuth.instance
+                        .signInWithEmailAndPassword(
+                        email: emailRegister.text, password: passwordRegister.text);
+                    await context.read<AppUser>().loginRoutine();
 
-
-                    context.read<AppUser>().user?.updateDisplayName(nameRegister.text);
-                    context.read<AppUser>().user?.sendEmailVerification();
-                    context.read<AppUser>().loginRoutine();
+                    //TDSEST
                     Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+
                   } on FirebaseAuthException catch (e) {
+                    Navigator.of(context).pop();
                     if (e.code == 'weak-password') {
                       setState(() {
                         errorMsg = "Das eingegebene Passwort ist zu schwach. "
